@@ -6,19 +6,15 @@ import (
 	"sync"
 	"time"
 
-	// Update the import path below to the correct location of your domain package.
-	// For example, if your module name is "github.com/rafael/aurora", use:
 	"aurora.com/aurora-backend/internal/features/user/domain"
 )
 
-// UserInMemoryRepository é uma implementação em memória da UserRepository.
 type UserInMemoryRepository struct {
 	mu      sync.Mutex
 	users   map[int]*domain.User
 	counter int
 }
 
-// NewUserInMemoryRepository cria um novo repositório em memória.
 func NewUserInMemoryRepository() domain.UserRepository {
 	return &UserInMemoryRepository{
 		users:   make(map[int]*domain.User),

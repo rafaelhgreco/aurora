@@ -1,11 +1,18 @@
 package domain
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 type User struct {
 	ID        int
 	Name      string
 	Email     string
-	Password  string // Adicionar hash
+	Password  string
 	CreatedAt time.Time
+}
+
+type PasswordHasher interface {
+    Hash(ctx context.Context, plain string) (string, error)
 }

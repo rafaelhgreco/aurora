@@ -6,6 +6,7 @@ import (
 	// Importações atualizadas com os novos caminhos
 	userController "aurora.com/aurora-backend/internal/features/user/controller"
 	userPersistence "aurora.com/aurora-backend/internal/features/user/gateway/repository" // Implementação
+	userSecurity "aurora.com/aurora-backend/internal/features/user/gateway/security"
 	userService "aurora.com/aurora-backend/internal/features/user/service"
 	userUseCase "aurora.com/aurora-backend/internal/features/user/use-case"
 )
@@ -16,21 +17,17 @@ type Container struct {
 }
 
 func Build() (*Container, error) {
-	// Camada de Persistência (implementação do repositório)
-	// Chamamos a função do novo pacote 'persistence'
-	userRepoImpl := userPersistence.NewUserInMemoryRepository()
 
-	// Camada de Casos de Uso (agora recebe a implementação que satisfaz a nova interface)
-	createUserUC := userUseCase.NewCreateUserUseCase(userRepoImpl)
+	userRepoImpl := userPersistence.NewUserInMemoryRepository()
+	passwordHasher := userSecurity.NewBcryptHasher()
+
+	createUserUC := userUseCase.NewCreateUserUseCase(userRepoImpl, passwordHasher)
 	getUserUC := userUseCase.NewGetUserByIDUseCase(userRepoImpl)
 
-	// Camada de Serviço (recebe os casos de uso)
 	userSvc := userService.NewUserService(createUserUC, getUserUC)
 
-	// Camada de Controller (recebe o serviço)
 	userCtrl := userController.NewUserController(userSvc)
 
-	// Configuração do Roteador (sem alterações)
 	router := gin.Default()
 	v1 := router.Group("/v1")
 	{

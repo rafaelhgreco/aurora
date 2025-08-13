@@ -27,8 +27,6 @@ func (ctrl *UserController) CreateUser(c *gin.Context) {
 		return
 	}
 
-	// O controller agora só chama o método do serviço.
-	// Toda a lógica de mapeamento e orquestração foi movida.
 	userResponse, err := ctrl.userService.Create(c.Request.Context(), &req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -46,11 +44,8 @@ func (ctrl *UserController) GetUser(c *gin.Context) {
 		return
 	}
 
-	// Delega diretamente para o serviço.
 	userResponse, err := ctrl.userService.FindByID(c.Request.Context(), id)
 	if err != nil {
-		// O serviço já lidou com a lógica, aqui só tratamos o resultado.
-		// Poderíamos ter erros mais específicos para retornar 404 vs 500.
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}

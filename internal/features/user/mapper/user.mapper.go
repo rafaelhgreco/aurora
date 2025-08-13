@@ -9,7 +9,7 @@ func FromCreateRequestToUserEntity(req *dto.CreateUserRequest) *domain.User {
 	return &domain.User{
 		Name:     req.Name,
 		Email:    req.Email,
-		Password: req.Password, //o hash seria feito no use-case
+		Password: req.Password,
 	}
 }
 

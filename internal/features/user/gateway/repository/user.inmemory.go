@@ -45,4 +45,3 @@ func (r *UserInMemoryRepository) FindByID(ctx context.Context, id int) (*domain.
 
 	return user, nil
 }
-

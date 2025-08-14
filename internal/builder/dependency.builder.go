@@ -3,12 +3,12 @@ package builder
 import (
 	"github.com/gin-gonic/gin"
 
-	// Importações atualizadas com os novos caminhos
+	// Importações que já estavam corretas
 	userController "aurora.com/aurora-backend/internal/features/user/controller"
-	userPersistence "aurora.com/aurora-backend/internal/features/user/gateway/repository" // Implementação
+	userFactory "aurora.com/aurora-backend/internal/features/user/factory"
+	userPersistence "aurora.com/aurora-backend/internal/features/user/gateway/repository"
 	userSecurity "aurora.com/aurora-backend/internal/features/user/gateway/security"
 	userService "aurora.com/aurora-backend/internal/features/user/service"
-	userUseCase "aurora.com/aurora-backend/internal/features/user/use-case"
 )
 
 type Container struct {
@@ -20,11 +20,13 @@ func Build() (*Container, error) {
 
 	userRepoImpl := userPersistence.NewUserInMemoryRepository()
 	passwordHasher := userSecurity.NewBcryptHasher()
+	
+	userUseCaseFactory := userFactory.NewUseCaseFactory(userRepoImpl, passwordHasher)
 
-	createUserUC := userUseCase.NewCreateUserUseCase(userRepoImpl, passwordHasher)
-	getUserUC := userUseCase.NewGetUserByIDUseCase(userRepoImpl)
-
-	userSvc := userService.NewUserService(createUserUC, getUserUC)
+	userSvc := userService.NewUserService(
+		userUseCaseFactory.CreateUser,
+		userUseCaseFactory.GetUser,
+	)
 
 	userCtrl := userController.NewUserController(userSvc)
 

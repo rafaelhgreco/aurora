@@ -1,24 +1,32 @@
 package builder
 
 import (
+	"context"
+
 	"github.com/gin-gonic/gin"
 
-	// Importações que já estavam corretas
 	userController "aurora.com/aurora-backend/internal/features/user/controller"
 	userFactory "aurora.com/aurora-backend/internal/features/user/factory"
 	userPersistence "aurora.com/aurora-backend/internal/features/user/gateway/repository"
 	userSecurity "aurora.com/aurora-backend/internal/features/user/gateway/security"
 	userService "aurora.com/aurora-backend/internal/features/user/service"
+	"aurora.com/aurora-backend/internal/firebase"
 )
 
 type Container struct {
 	Router         *gin.Engine
 	UserController *userController.UserController
+	FirebaseApp    *firebase.FirebaseApp
 }
 
 func Build() (*Container, error) {
+	ctx := context.Background()
+	fbApp, err := firebase.NewFirebaseApp(ctx)
+    if err != nil {
+        return nil, err
+    }
 
-	userRepoImpl := userPersistence.NewUserInMemoryRepository()
+	userRepoImpl, err := userPersistence.NewUserFirestoreRepository(fbApp)
 	passwordHasher := userSecurity.NewBcryptHasher()
 	
 	userUseCaseFactory := userFactory.NewUseCaseFactory(userRepoImpl, passwordHasher)
@@ -43,5 +51,6 @@ func Build() (*Container, error) {
 	return &Container{
 		Router:         router,
 		UserController: userCtrl,
+		FirebaseApp:    fbApp,
 	}, nil
 }

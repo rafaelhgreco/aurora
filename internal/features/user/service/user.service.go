@@ -34,7 +34,7 @@ func (s *userService) Create(ctx context.Context, req *dto.CreateUserRequest) (*
 	return response, nil
 }
 
-func (s *userService) FindByID(ctx context.Context, id int) (*dto.UserResponse, error) {
+func (s *userService) FindByID(ctx context.Context, id string) (*dto.UserResponse, error) {
 	user, err := s.getUserUseCase.Execute(ctx, id)
 	if err != nil {
 		return nil, err

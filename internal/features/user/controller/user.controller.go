@@ -2,7 +2,6 @@ package controller
 
 import (
 	"net/http"
-	"strconv"
 
 	"aurora.com/aurora-backend/internal/features/user/dto"
 	"github.com/gin-gonic/gin"
@@ -37,10 +36,9 @@ func (ctrl *UserController) CreateUser(c *gin.Context) {
 }
 
 func (ctrl *UserController) GetUser(c *gin.Context) {
-	idParam := c.Param("id")
-	id, err := strconv.Atoi(idParam)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
+	id := c.Param("id")
+	if id == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID is required"})
 		return
 	}
 

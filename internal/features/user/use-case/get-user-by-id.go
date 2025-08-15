@@ -14,6 +14,6 @@ func NewGetUserByIDUseCase(repo domain.UserRepository) *GetUserByIDUseCase {
 	return &GetUserByIDUseCase{userRepo: repo}
 }
 
-func (uc *GetUserByIDUseCase) Execute(ctx context.Context, id int) (*domain.User, error) {
+func (uc *GetUserByIDUseCase) Execute(ctx context.Context, id string) (*domain.User, error) {
 	return uc.userRepo.FindByID(ctx, id)
 }

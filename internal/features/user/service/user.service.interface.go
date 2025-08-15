@@ -8,5 +8,5 @@ import (
 
 type IUserService interface {
 	Create(ctx context.Context, req *dto.CreateUserRequest) (*dto.UserResponse, error)
-	FindByID(ctx context.Context, id int) (*dto.UserResponse, error)
+	FindByID(ctx context.Context, id string) (*dto.UserResponse, error)
 }

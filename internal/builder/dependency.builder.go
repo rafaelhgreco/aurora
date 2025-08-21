@@ -27,6 +27,9 @@ func Build() (*Container, error) {
     }
 
 	userRepoImpl, err := userPersistence.NewUserFirestoreRepository(fbApp)
+	if err != nil {
+		return nil, err
+	}
 	passwordHasher := userSecurity.NewBcryptHasher()
 	
 	userUseCaseFactory := userFactory.NewUseCaseFactory(userRepoImpl, passwordHasher)
@@ -34,6 +37,8 @@ func Build() (*Container, error) {
 	userSvc := userService.NewUserService(
 		userUseCaseFactory.CreateUser,
 		userUseCaseFactory.GetUser,
+		userUseCaseFactory.UpdateUser,
+		userUseCaseFactory.DeleteUser,
 	)
 
 	userCtrl := userController.NewUserController(userSvc)
@@ -45,6 +50,8 @@ func Build() (*Container, error) {
 		{
 			userRoutes.POST("", userCtrl.CreateUser)
 			userRoutes.GET("/:id", userCtrl.GetUser)
+			userRoutes.PUT("/:id", userCtrl.UpdateUser)
+			userRoutes.DELETE("/:id", userCtrl.DeleteUser)
 		}
 	}
 

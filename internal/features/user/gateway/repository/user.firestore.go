@@ -61,3 +61,19 @@ func (r *UserFirestoreRepository) FindByID(ctx context.Context, id string) (*dom
 	user.ID = docSnap.Ref.ID
 	return &user, nil
 }
+
+// Update atualiza um documento de usuário existente no Firestore.
+func (r *UserFirestoreRepository) Update(ctx context.Context, user *domain.User) (*
+domain.User, error) {
+	_, err := r.client.Collection(userCollection).Doc(user.ID).Set(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+// Delete remove um documento de usuário pelo seu ID.
+func (r *UserFirestoreRepository) Delete(ctx context.Context, id string) error {
+	_, err := r.client.Collection(userCollection).Doc(id).Delete(ctx)
+	return err
+}

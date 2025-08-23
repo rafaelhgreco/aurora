@@ -32,13 +32,11 @@ func NewUserFirestoreRepository(fbApp *firebase.FirebaseApp) (repository.UserRep
 
 // Save cria um novo documento de usuário no Firestore.
 func (r *UserFirestoreRepository) Save(ctx context.Context, user *domain.User) (*domain.User, error) {
-	// Deixamos o Firestore gerar o ID automaticamente com o método Add
-	docRef, _, err := r.client.Collection(userCollection).Add(ctx, user)
+	_, err := r.client.Collection(userCollection).Doc(user.ID).Set(ctx, user)
 	if err != nil {
 		return nil, err
 	}
-	// Preenchemos o ID na nossa entidade com o ID gerado pelo Firestore
-	user.ID = docRef.ID
+	
 	return user, nil
 }
 

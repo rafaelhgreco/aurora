@@ -29,8 +29,11 @@ func NewUserService(
 	}
 }
 func (s *userService) Create(ctx context.Context, req *dto.CreateUserRequest) (*dto.UserResponse, error) {
-	userEntity := mapper.FromCreateRequestToUserEntity(req)
-
+	userEntity, err := mapper.FromCreateRequestToUserEntity(req)
+	if err != nil {
+		return nil, err
+	}
+	
 	createdUser, err := s.createUserUseCase.Execute(ctx, userEntity)
 	if err != nil {
 		return nil, err

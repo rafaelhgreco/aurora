@@ -11,7 +11,7 @@ func FromCreateRequestToUserEntity(req *dto.CreateUserRequest) (*domain.User, er
 		return nil, err
 	}
 
-	adminData, collaboratorData := buildRoleSpecificData(userType, req)
+	adminData, collaboratorData, financialData := buildRoleSpecificData(userType, req)
 	return &domain.User{
 		Name:             req.Name,
 		Email:            req.Email,
@@ -19,6 +19,7 @@ func FromCreateRequestToUserEntity(req *dto.CreateUserRequest) (*domain.User, er
 		Type:             userType,
 		AdminData:        adminData,
 		CollaboratorData: collaboratorData,
+		FinancialData:   financialData,
 	}, nil
 }
 

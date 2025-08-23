@@ -6,6 +6,7 @@ import (
 	"aurora.com/aurora-backend/internal/features/user/dto"
 	"github.com/gin-gonic/gin"
 
+	securityDTO "aurora.com/aurora-backend/internal/features/user/security/dto"
 	userservice "aurora.com/aurora-backend/internal/features/user/service"
 )
 
@@ -13,7 +14,7 @@ type UserController struct {
 	userService userservice.IUserService
 }
 
-func NewUserController(service userservice.IUserService) *UserController {
+func NewUserController(service userservice.IUserService ) *UserController {
 	return &UserController{
 		userService: service,
 	}
@@ -82,6 +83,51 @@ func (ctrl *UserController) DeleteUser(c *gin.Context) {
 
 	if err := ctrl.userService.Delete(c.Request.Context(), id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
+
+func (ctrl *UserController) Login(c *gin.Context) {
+	var req securityDTO.LoginRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	loginResponse, err := ctrl.userService.Login(c.Request.Context(), req.IDToken)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, loginResponse)
+}
+
+func (ctrl *UserController) ChangePassword(c *gin.Context) {
+	// O UID não vem mais da URL. Ele é injetado de forma segura pelo middleware.
+	uid, exists := c.Get("uid")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User UID not found in context"})
+		return
+	}
+	
+	// Convertemos o uid (que é interface{}) para string
+	userID, ok := uid.(string)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "UID in context is not a string"})
+		return
+	}
+	
+	var req securityDTO.ChangePasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := ctrl.userService.ChangePassword(c.Request.Context(), userID, &req); err != nil {
+		// ...
 		return
 	}
 

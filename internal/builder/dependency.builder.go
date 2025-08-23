@@ -26,33 +26,58 @@ func Build() (*Container, error) {
         return nil, err
     }
 
+
+	authClient, err := fbApp.App.Auth(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	authGateway := userSecurity.NewFirebaseAuthGateway(authClient)
+
 	userRepoImpl, err := userPersistence.NewUserFirestoreRepository(fbApp)
 	if err != nil {
 		return nil, err
 	}
 	passwordHasher := userSecurity.NewBcryptHasher()
 	
-	userUseCaseFactory := userFactory.NewUseCaseFactory(userRepoImpl, passwordHasher)
+	userUseCaseFactory := userFactory.NewUseCaseFactory(userRepoImpl, passwordHasher, authGateway)
 
 	userSvc := userService.NewUserService(
 		userUseCaseFactory.CreateUser,
 		userUseCaseFactory.GetUser,
 		userUseCaseFactory.UpdateUser,
 		userUseCaseFactory.DeleteUser,
+		userUseCaseFactory.LoginUser,
+		userUseCaseFactory.ChangePassword,
 	)
 
 	userCtrl := userController.NewUserController(userSvc)
 
 	router := gin.Default()
-	v1 := router.Group("/v1")
+	authMw := userSecurity.AuthMiddleware(authClient)
+
 	{
-		userRoutes := v1.Group("/users")
-		{
-			userRoutes.POST("", userCtrl.CreateUser)
-			userRoutes.GET("/:id", userCtrl.GetUser)
-			userRoutes.PUT("/:id", userCtrl.UpdateUser)
-			userRoutes.DELETE("/:id", userCtrl.DeleteUser)
-		}
+    v1 := router.Group("/v1")
+    {
+        // Rotas públicas
+        v1.POST("/auth/login", userCtrl.Login)
+        v1.POST("/users", userCtrl.CreateUser)
+
+        // Rotas protegidas
+        protectedRoutes := v1.Group("/")
+        protectedRoutes.Use(authMw) // APLICA O MIDDLEWARE AQUI
+        {
+            userRoutes := protectedRoutes.Group("/users")
+            {
+                userRoutes.GET("/:id", userCtrl.GetUser) // Agora protegido
+                userRoutes.PUT("/:id", userCtrl.UpdateUser) // Agora protegido
+                userRoutes.DELETE("/:id", userCtrl.DeleteUser) // Agora protegido
+                
+                // Rota mais segura para alterar a senha
+                userRoutes.PUT("/me/password", userCtrl.ChangePassword) 
+            }
+        }
+    }
 	}
 
 	return &Container{

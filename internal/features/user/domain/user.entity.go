@@ -49,6 +49,14 @@ type FinancialProfile struct {
 	PaymentMethods string
 }
 
+type AuthClient interface {
+	VerifyIDToken(ctx context.Context, idToken string) (string, error)
+	GenerateAccessToken(ctx context.Context, userID string) (string, error)
+	GenerateRefreshToken(ctx context.Context, userID string) (string, error)
+	UpdateUser(ctx context.Context, uid string, params interface{}) (interface{}, error)
+	CreateUser(ctx context.Context, user *User) (string, error) 
+}
+
 
 type User struct {
 	ID        string 	`firestore:"-"`

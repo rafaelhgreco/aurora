@@ -1,2 +1,6 @@
 .env
 firebase-credentials.json
+/tmp
+air_build.log
+air_run.log
+main.exe

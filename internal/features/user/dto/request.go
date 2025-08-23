@@ -21,13 +21,11 @@ type CreateUserRequest struct {
 	} `json:"financialProfile"`
 }
 
-// UpdateUserRequest permanece o mesmo
 type UpdateUserRequest struct {
 	Name  *string `json:"name,omitempty"`
 	Email *string `json:"email,omitempty" binding:"omitempty,email"`
 }
 
-// DeleteUserRequest permanece o mesmo
 type DeleteUserRequest struct {
 	ID string `json:"id" binding:"required"`
 }

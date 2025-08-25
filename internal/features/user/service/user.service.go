@@ -36,7 +36,7 @@ func NewUserService(
 		changePasswordUC: changeUC,
 	}
 }
-func (s *userService) Create(ctx context.Context, req *dto.CreateUserRequest) (interface{}, error) {
+func (s *userService) Create(ctx context.Context, req *dto.CreateUserRequest) (*dto.UserResponse, error) {
 	// 1. Usa o Mapper para traduzir o DTO em uma Entidade de Domínio.
 	userEntity, err := mapper.FromCreateRequestToUserEntity(req)
 	if err != nil {
@@ -51,28 +51,25 @@ func (s *userService) Create(ctx context.Context, req *dto.CreateUserRequest) (i
 	}
 
 	// 3. Usa o outro lado do Mapper para traduzir a Entidade de volta para um DTO de resposta.
-	response := mapper.FromUserEntityToSpecificResponse(createdUser)
-	return response, nil
+	return mapper.FromUserEntityToUserResponse(createdUser), nil
 }
 
-func (s *userService) FindByID(ctx context.Context, id string) (interface{}, error) {
+func (s *userService) FindByID(ctx context.Context, id string) (*dto.UserResponse, error) {
 	user, err := s.getUserUseCase.Execute(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	response := mapper.FromUserEntityToUserResponse(user)
-	return response, nil
+	return mapper.FromUserEntityToUserResponse(user), nil
 }
 
-func (s *userService) Update(ctx context.Context, id string, req *dto.UpdateUserRequest) (interface{}, error) {
+func (s *userService) Update(ctx context.Context, id string, req *dto.UpdateUserRequest) (*dto.UserResponse, error) {
 	updatedUser, err := s.updateUserUseCase.Execute(ctx, id, req.Name, req.Email)
 	if err != nil {
 		return nil, err
 	}
 
-	response := mapper.FromUserEntityToUserResponse(updatedUser)
-	return response, nil
+	return mapper.FromUserEntityToUserResponse(updatedUser), nil
 }
 
 func (s *userService) Delete(ctx context.Context, id string) error {
@@ -87,13 +84,11 @@ func (s *userService) Login(ctx context.Context, idToken string) (*securityDTO.L
 
 	userResponse := mapper.FromUserEntityToUserResponse(userEntity)
 
-	loginResponse := &securityDTO.LoginResponse{
+	return &securityDTO.LoginResponse{
 		User:         userResponse,
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
-	}
-
-	return loginResponse, nil
+	}, nil
 }
 
 func (s *userService) ChangePassword(
@@ -101,11 +96,5 @@ func (s *userService) ChangePassword(
     userID string,
     req *securityDTO.ChangePasswordRequest,
 ) error {
-	newPassword := req.NewPassword
-	err := s.changePasswordUC.Execute(ctx, userID, newPassword)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return s.changePasswordUC.Execute(ctx, userID, req.NewPassword)
 }

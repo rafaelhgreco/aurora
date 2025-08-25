@@ -9,13 +9,13 @@ import (
 
 type IUserService interface {
     // --- Métodos CRUD ---
-    Create(ctx context.Context, req *dto.CreateUserRequest) (interface{}, error) 
+    Create(ctx context.Context, req *dto.CreateUserRequest) (*dto.UserResponse, error) 
     
     // Sugestão: Mudar para interface{} para suportar respostas polimórficas.
-    FindByID(ctx context.Context, id string) (interface{}, error)
+    FindByID(ctx context.Context, id string) (*dto.UserResponse, error)
     
     // Sugestão: Mudar para interface{} para suportar respostas polimórficas.
-    Update(ctx context.Context, id string, req *dto.UpdateUserRequest) (interface{}, error)
+    Update(ctx context.Context, id string, req *dto.UpdateUserRequest) (*dto.UserResponse, error)
     
     Delete(ctx context.Context, id string) error
 

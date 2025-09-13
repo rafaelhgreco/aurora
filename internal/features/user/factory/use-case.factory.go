@@ -2,7 +2,6 @@ package factory
 
 import (
 	"aurora.com/aurora-backend/internal/features/user/domain"
-	"aurora.com/aurora-backend/internal/features/user/repository"
 	securityUseCase "aurora.com/aurora-backend/internal/features/user/security/use-case"
 	usecase "aurora.com/aurora-backend/internal/features/user/use-case"
 )
@@ -17,7 +16,7 @@ type UseCaseFactory struct {
 }
 
 func NewUseCaseFactory(
-    userRepo repository.UserRepository, 
+    userRepo domain.UserRepository, 
     passwordHasher domain.PasswordHasher, 
     authClient domain.AuthClient,
 ) *UseCaseFactory {

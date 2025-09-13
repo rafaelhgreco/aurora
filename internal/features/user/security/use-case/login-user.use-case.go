@@ -4,15 +4,14 @@ import (
 	"context"
 
 	"aurora.com/aurora-backend/internal/features/user/domain"
-	"aurora.com/aurora-backend/internal/features/user/repository"
 )
 
 type LoginUserUseCase struct {
-	userRepo repository.UserRepository
+	userRepo domain.UserRepository
 	authClient domain.AuthClient
 }
 
-func NewLoginUserUseCase(userRepo repository.UserRepository, authClient domain.AuthClient) *LoginUserUseCase {
+func NewLoginUserUseCase(userRepo domain.UserRepository, authClient domain.AuthClient) *LoginUserUseCase {
 	return &LoginUserUseCase{
 		userRepo: userRepo,
 		authClient: authClient,

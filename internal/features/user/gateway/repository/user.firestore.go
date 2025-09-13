@@ -9,7 +9,6 @@ import (
 	"google.golang.org/grpc/status"
 
 	"aurora.com/aurora-backend/internal/features/user/domain"
-	"aurora.com/aurora-backend/internal/features/user/repository"
 	"aurora.com/aurora-backend/internal/firebase"
 )
 
@@ -21,7 +20,7 @@ type UserFirestoreRepository struct {
 }
 
 // NewUserFirestoreRepository cria uma nova instância do repositório do Firestore.
-func NewUserFirestoreRepository(fbApp *firebase.FirebaseApp) (repository.UserRepository, error) {
+func NewUserFirestoreRepository(fbApp *firebase.FirebaseApp) (domain.UserRepository, error) {
 	client, err := fbApp.Firestore(context.Background())
 	if err != nil {
 		log.Fatalf("Falha ao criar cliente do Firestore: %v", err)

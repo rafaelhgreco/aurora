@@ -37,20 +37,15 @@ func NewUserService(
 	}
 }
 func (s *userService) Create(ctx context.Context, req *dto.CreateUserRequest) (*dto.UserResponse, error) {
-	// 1. Usa o Mapper para traduzir o DTO em uma Entidade de Domínio.
 	userEntity, err := mapper.FromCreateRequestToUserEntity(req)
 	if err != nil {
-		// Retorna um erro se o mapeamento falhar (ex: tipo de usuário inválido)
 		return nil, err
 	}
-
-	// 2. AGORA sim, passa a Entidade ('userEntity') para o UseCase.
 	createdUser, err := s.createUserUseCase.Execute(ctx, userEntity)
 	if err != nil {
 		return nil, err
 	}
 
-	// 3. Usa o outro lado do Mapper para traduzir a Entidade de volta para um DTO de resposta.
 	return mapper.FromUserEntityToUserResponse(createdUser), nil
 }
 

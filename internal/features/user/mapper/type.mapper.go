@@ -13,8 +13,6 @@ func mapStringToUserType(typeStr string) (domain.UserType, error) {
 		return domain.ADMIN, nil
 	case "COLLABORATOR":
 		return domain.COLLABORATOR, nil
-	case "FINANCIAL":
-		return domain.FINANCIAL, nil
 	case "COMMON":
 		return domain.COMMON, nil
 	default:
@@ -22,16 +20,13 @@ func mapStringToUserType(typeStr string) (domain.UserType, error) {
 	}
 }
 
-func buildRoleSpecificData(userType domain.UserType, req *dto.CreateUserRequest) (*domain.AdminProfile, *domain.CollaboratorProfile, *domain.FinancialProfile) {
+func buildRoleSpecificData(userType domain.UserType, req *dto.CreateUserRequest) (*domain.AdminProfile, *domain.CollaboratorProfile) {
 	switch userType {
 	case domain.ADMIN:
-		return &domain.AdminProfile{Permissions: req.Permissions}, nil, nil
+		return &domain.AdminProfile{Permissions: req.Permissions}, nil
 	case domain.COLLABORATOR:
-		return nil, &domain.CollaboratorProfile{TeamID: req.TeamID}, nil
-	case domain.FINANCIAL:
-		financialProfile := mapFinancialProfileFromDTO(req)
-		return nil, nil, financialProfile
+		return nil, &domain.CollaboratorProfile{TeamID: req.TeamID}
 	default:
-		return nil, nil, nil
+		return nil, nil
 	}
 }

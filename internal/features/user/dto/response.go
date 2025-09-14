@@ -24,15 +24,3 @@ type CollaboratorUserResponse struct {
 }
 
 type CommonUserResponse = UserResponse
-
-type BillingAddress struct {
-	City    string `json:"city"`
-	State   string `json:"state"`
-	Country string `json:"country"`
-}
-
-type SubscriptionPlan struct {
-	PlanID string `json:"plan_id"`
-	ExpiresAt time.Time `json:"expires_at"`
-	Status string `json:"status"`
-}

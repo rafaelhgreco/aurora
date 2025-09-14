@@ -12,11 +12,10 @@ const (
 	COMMON UserType = iota
 	COLLABORATOR
 	ADMIN
-	FINANCIAL
 )
 
 func (ut UserType) String() string {
-	return [...]string{"COMMON", "COLLABORATOR", "ADMIN", "FINANCIAL"}[ut]
+	return [...]string{"COMMON", "COLLABORATOR", "ADMIN"}[ut]
 }
 
 type AdminProfile struct {
@@ -26,27 +25,6 @@ type AdminProfile struct {
 type CollaboratorProfile struct {
 	TeamID string
 	Projects []string
-}
-
-type BillingAddress struct {
-	Street  string
-	City   string
-	State   string
-	ZipCode string
-	Country string
-}
-
-type Subscription struct {
-	PlanID      string
-	StartDate time.Time
-	EndDate   time.Time
-	Active    bool
-}
-
-type FinancialProfile struct {
-	BillingAddress BillingAddress
-	Subscription   Subscription
-	PaymentMethods string
 }
 
 type AuthClient interface {
@@ -68,7 +46,6 @@ type User struct {
 	Type      UserType  `firestore:"type"`
 	AdminData *AdminProfile `firestore:"adminData,omitempty"`
 	CollaboratorData *CollaboratorProfile `firestore:"collaboratorData,omitempty"`
-	FinancialData *FinancialProfile `firestore:"financialData,omitempty"`
 }
 
 type PasswordHasher interface {

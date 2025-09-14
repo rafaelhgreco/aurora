@@ -5,11 +5,18 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	// User imports
 	userController "aurora.com/aurora-backend/internal/features/user/controller"
 	userFactory "aurora.com/aurora-backend/internal/features/user/factory"
 	userPersistence "aurora.com/aurora-backend/internal/features/user/gateway/repository"
 	userSecurity "aurora.com/aurora-backend/internal/features/user/gateway/security"
 	userService "aurora.com/aurora-backend/internal/features/user/service"
+
+	// Events imports
+	"aurora.com/aurora-backend/internal/features/events"
+	eventsDomain "aurora.com/aurora-backend/internal/features/events/domain"
+	eventsGateway "aurora.com/aurora-backend/internal/features/events/gateway"
+
 	"aurora.com/aurora-backend/internal/firebase"
 )
 
@@ -17,15 +24,20 @@ type Container struct {
 	Router         *gin.Engine
 	UserController *userController.UserController
 	FirebaseApp    *firebase.FirebaseApp
+
+	// Event repositories
+	EventRepo           eventsDomain.EventRepository
+	TicketLotRepo       eventsDomain.TicketLotRepository
+	PurchasedTicketRepo eventsDomain.PurchasedTicketRepository
+	OrderRepo           eventsDomain.OrderRepository
 }
 
 func Build() (*Container, error) {
 	ctx := context.Background()
 	fbApp, err := firebase.NewFirebaseApp(ctx)
-    if err != nil {
-        return nil, err
-    }
-
+	if err != nil {
+		return nil, err
+	}
 
 	authClient, err := fbApp.App.Auth(ctx)
 	if err != nil {
@@ -33,15 +45,13 @@ func Build() (*Container, error) {
 	}
 
 	authGateway := userSecurity.NewFirebaseAuthGateway(authClient)
-
 	userRepoImpl, err := userPersistence.NewUserFirestoreRepository(fbApp)
 	if err != nil {
 		return nil, err
 	}
 	passwordHasher := userSecurity.NewBcryptHasher()
-	
-	userUseCaseFactory := userFactory.NewUseCaseFactory(userRepoImpl, passwordHasher, authGateway)
 
+	userUseCaseFactory := userFactory.NewUseCaseFactory(userRepoImpl, passwordHasher, authGateway)
 	userSvc := userService.NewUserService(
 		userUseCaseFactory.CreateUser,
 		userUseCaseFactory.GetUser,
@@ -50,39 +60,66 @@ func Build() (*Container, error) {
 		userUseCaseFactory.LoginUser,
 		userUseCaseFactory.ChangePassword,
 	)
-
 	userCtrl := userController.NewUserController(userSvc)
+
+	eventRepo, err := eventsGateway.NewEventFirestoreRepository(fbApp)
+	if err != nil {
+		return nil, err
+	}
+
+	ticketLotRepo, err := eventsGateway.NewTicketLotFirestoreRepository(fbApp)
+	if err != nil {
+		return nil, err
+	}
+
+	purchasedTicketRepo, err := eventsGateway.NewPurchasedTicketFirestoreRepository(fbApp)
+	if err != nil {
+		return nil, err
+	}
+
+	orderRepo, err := eventsGateway.NewOrderFirestoreRepository(fbApp)
+	if err != nil {
+		return nil, err
+	}
 
 	router := gin.Default()
 	authMw := userSecurity.AuthMiddleware(authClient)
 
 	{
-    v1 := router.Group("/v1")
-    {
-        // Rotas públicas
-        v1.POST("/auth/login", userCtrl.Login)
-        v1.POST("/users", userCtrl.CreateUser)
+		v1 := router.Group("/v1")
+		{
+			// Rotas públicas
+			v1.POST("/auth/login", userCtrl.Login)
+			v1.POST("/users", userCtrl.CreateUser)
 
-        // Rotas protegidas
-        protectedRoutes := v1.Group("/")
-        protectedRoutes.Use(authMw) // APLICA O MIDDLEWARE AQUI
-        {
-            userRoutes := protectedRoutes.Group("/users")
-            {
-                userRoutes.GET("/:id", userCtrl.GetUser) // Agora protegido
-                userRoutes.PUT("/:id", userCtrl.UpdateUser) // Agora protegido
-                userRoutes.DELETE("/:id", userCtrl.DeleteUser) // Agora protegido
-                
-                // Rota mais segura para alterar a senha
-                userRoutes.PUT("/me/password", userCtrl.ChangePassword) 
-            }
-        }
-    }
+			// Rota de teste dos repositórios
+			v1.GET("/test/repositories", func(c *gin.Context) {
+				events.TestRepositories()
+				c.JSON(200, gin.H{"message": "Teste dos repositórios executado. Verifique os logs."})
+			})
+
+			// Rotas protegidas
+			protectedRoutes := v1.Group("/")
+			protectedRoutes.Use(authMw)
+			{
+				userRoutes := protectedRoutes.Group("/users")
+				{
+					userRoutes.GET("/:id", userCtrl.GetUser)
+					userRoutes.PUT("/:id", userCtrl.UpdateUser)
+					userRoutes.DELETE("/:id", userCtrl.DeleteUser)
+					userRoutes.PUT("/me/password", userCtrl.ChangePassword)
+				}
+			}
+		}
 	}
 
 	return &Container{
-		Router:         router,
-		UserController: userCtrl,
-		FirebaseApp:    fbApp,
+		Router:              router,
+		UserController:      userCtrl,
+		FirebaseApp:         fbApp,
+		EventRepo:           eventRepo,
+		TicketLotRepo:       ticketLotRepo,
+		PurchasedTicketRepo: purchasedTicketRepo,
+		OrderRepo:           orderRepo,
 	}, nil
 }

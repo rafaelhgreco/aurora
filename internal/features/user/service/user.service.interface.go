@@ -15,6 +15,7 @@ type IUserService interface {
     Update(ctx context.Context, id string, req *dto.UpdateUserRequest) (*dto.UserResponse, error)
     
     Delete(ctx context.Context, id string) error
+    
 
     Login(ctx context.Context, idToken string) (*securityDTO.LoginResponse, error)
     ChangePassword(ctx context.Context, userID string, req *securityDTO.ChangePasswordRequest) error

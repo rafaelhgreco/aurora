@@ -14,6 +14,23 @@ const (
 	EVENT_FINISHED
 )
 
+func (es EventStatus) String() string {
+    switch es {
+    case EVENT_SCHEDULED:
+        return "SCHEDULED"
+    case EVENT_OPEN_FOR_SALE:
+        return "OPEN_FOR_SALE"
+    case EVENT_SOLD_OUT:
+        return "SOLD_OUT"
+    case EVENT_CANCELLED:
+        return "CANCELLED"
+    case EVENT_FINISHED:
+        return "FINISHED"
+    default:
+        return "UNKNOWN"
+    }
+}
+
 type Event struct {
 	ID          string `firestore:"-"`
 	Title       string `firestore:"title"`

@@ -8,14 +8,17 @@ import (
 	// User imports
 	userController "aurora.com/aurora-backend/internal/features/user/controller"
 	userFactory "aurora.com/aurora-backend/internal/features/user/factory"
-	userPersistence "aurora.com/aurora-backend/internal/features/user/gateway/repository"
+	userGateway "aurora.com/aurora-backend/internal/features/user/gateway/repository"
 	userSecurity "aurora.com/aurora-backend/internal/features/user/gateway/security"
 	userService "aurora.com/aurora-backend/internal/features/user/service"
 
 	// Events imports
 	"aurora.com/aurora-backend/internal/features/events"
+	eventsController "aurora.com/aurora-backend/internal/features/events/controller"
 	eventsDomain "aurora.com/aurora-backend/internal/features/events/domain"
+	eventsFactory "aurora.com/aurora-backend/internal/features/events/factory"
 	eventsGateway "aurora.com/aurora-backend/internal/features/events/gateway"
+	eventsService "aurora.com/aurora-backend/internal/features/events/service"
 
 	"aurora.com/aurora-backend/internal/firebase"
 )
@@ -26,6 +29,7 @@ type Container struct {
 	FirebaseApp    *firebase.FirebaseApp
 
 	// Event repositories
+	EventController    *eventsController.EventController
 	EventRepo           eventsDomain.EventRepository
 	TicketLotRepo       eventsDomain.TicketLotRepository
 	PurchasedTicketRepo eventsDomain.PurchasedTicketRepository
@@ -45,7 +49,7 @@ func Build() (*Container, error) {
 	}
 
 	authGateway := userSecurity.NewFirebaseAuthGateway(authClient)
-	userRepoImpl, err := userPersistence.NewUserFirestoreRepository(fbApp)
+	userRepoImpl, err := userGateway.NewUserFirestoreRepository(fbApp)
 	if err != nil {
 		return nil, err
 	}
@@ -62,10 +66,16 @@ func Build() (*Container, error) {
 	)
 	userCtrl := userController.NewUserController(userSvc)
 
-	eventRepo, err := eventsGateway.NewEventFirestoreRepository(fbApp)
+	eventRepoImpl, err := eventsGateway.NewEventFirestoreRepository(fbApp)
 	if err != nil {
 		return nil, err
 	}
+
+	eventUseCaseFactory := eventsFactory.NewUseCaseFactory(eventRepoImpl)
+	eventSvc := eventsService.NewEventService(
+		eventUseCaseFactory.CreateEvent,
+	)
+	eventCtrl := eventsController.NewEventController(eventSvc)
 
 	ticketLotRepo, err := eventsGateway.NewTicketLotFirestoreRepository(fbApp)
 	if err != nil {
@@ -109,6 +119,11 @@ func Build() (*Container, error) {
 					userRoutes.DELETE("/:id", userCtrl.DeleteUser)
 					userRoutes.PUT("/me/password", userCtrl.ChangePassword)
 				}
+				eventRoutes := protectedRoutes.Group("/events")
+				{
+					eventRoutes.POST("/", eventCtrl.CreateEvent)
+					// Outras rotas de eventos podem ser adicionadas aqui
+				}
 			}
 		}
 	}
@@ -117,7 +132,7 @@ func Build() (*Container, error) {
 		Router:              router,
 		UserController:      userCtrl,
 		FirebaseApp:         fbApp,
-		EventRepo:           eventRepo,
+		EventRepo:           eventRepoImpl,
 		TicketLotRepo:       ticketLotRepo,
 		PurchasedTicketRepo: purchasedTicketRepo,
 		OrderRepo:           orderRepo,

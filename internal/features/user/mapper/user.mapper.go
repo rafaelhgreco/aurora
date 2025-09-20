@@ -33,6 +33,7 @@ func FromUserEntityToUserResponse(entity *domain.User) *dto.UserResponse {
 		ID:        entity.ID,
 		Name:      entity.Name,
 		Email:     entity.Email,
+		Type:      entity.Type.String(),
 		CreatedAt: entity.CreatedAt,
 	}
 }

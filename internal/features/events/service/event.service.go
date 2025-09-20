@@ -21,14 +21,14 @@ func NewEventService(
 	}
 }
 
-func (s *eventService) Save(ctx context.Context, req *dto.CreateEventRequest) (*dto.EventResponse, error) {
-	eventEntity, err := mapper.FromCreateRequestToEventEntity(req)
-	if err != nil {
-		return nil, err
-	}
-	createdEvent, err := s.createEventUseCase.Execute(ctx, eventEntity)
-	if err != nil {
-		return nil, err
-	}
-	return mapper.FromEventEntityToEventResponse(createdEvent), nil
+func (s *eventService) Save(ctx context.Context, req *dto.CreateEventRequest) error {
+    eventEntity, err := mapper.FromCreateRequestToEventEntity(req)
+    if err != nil {
+        return err
+    }
+    _, err = s.createEventUseCase.Execute(ctx, eventEntity)
+    if err != nil {
+        return err
+    }
+    return nil
 }

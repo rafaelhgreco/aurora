@@ -7,7 +7,7 @@ import (
 )
 
 type IEventService interface {
-	Save(ctx context.Context, req *dto.CreateEventRequest ) (*dto.EventResponse, error)
+	Save(ctx context.Context, req *dto.CreateEventRequest ) (error)
 	// FindByID(id string) (interface{}, error)
 	// UpdateEvent(id string, data interface{}) error
 	// DeleteEvent(id string) error

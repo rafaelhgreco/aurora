@@ -24,10 +24,10 @@ func (ctrl *EventController) CreateEvent(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	eventResponse, err := ctrl.eventService.Save(c.Request.Context(), &req)
+	err := ctrl.eventService.Save(c.Request.Context(), &req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, eventResponse)
+	c.Status(http.StatusCreated)
 }

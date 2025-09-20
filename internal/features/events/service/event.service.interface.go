@@ -12,5 +12,4 @@ type IEventService interface {
 	ListEvents(ctx context.Context, filter map[string]interface{}) ([]*dto.EventResponse, error)
 	SoftDeleteEvent(ctx context.Context, id string) error
 	// UpdateEvent(id string, data interface{}) error
-	// FindByTitle(title string) (interface{}, error)
 }

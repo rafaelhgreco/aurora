@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"aurora.com/aurora-backend/internal/features/events/domain"
+	"aurora.com/aurora-backend/internal/features/tickets/domain"
 	"aurora.com/aurora-backend/internal/firebase"
 	"cloud.google.com/go/firestore"
 )

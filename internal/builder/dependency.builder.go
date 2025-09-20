@@ -19,6 +19,14 @@ import (
 	eventsGateway "aurora.com/aurora-backend/internal/features/events/gateway"
 	eventsService "aurora.com/aurora-backend/internal/features/events/service"
 
+	// Tickets imports
+	ticketsDomain "aurora.com/aurora-backend/internal/features/tickets/domain"
+	ticketsGateway "aurora.com/aurora-backend/internal/features/tickets/gateway"
+
+	// Orders imports
+	orderDomain "aurora.com/aurora-backend/internal/features/order/domain"
+	orderGateway "aurora.com/aurora-backend/internal/features/order/gateway"
+
 	"aurora.com/aurora-backend/internal/firebase"
 )
 
@@ -30,9 +38,9 @@ type Container struct {
 	// Event repositories
 	EventController    *eventsController.EventController
 	EventRepo           eventsDomain.EventRepository
-	TicketLotRepo       eventsDomain.TicketLotRepository
-	PurchasedTicketRepo eventsDomain.PurchasedTicketRepository
-	OrderRepo           eventsDomain.OrderRepository
+	TicketLotRepo       ticketsDomain.TicketLotRepository
+	PurchasedTicketRepo ticketsDomain.PurchasedTicketRepository
+	OrderRepo           orderDomain.OrderRepository
 }
 
 func Build() (*Container, error) {
@@ -79,17 +87,17 @@ func Build() (*Container, error) {
 	)
 	eventCtrl := eventsController.NewEventController(eventSvc)
 
-	ticketLotRepo, err := eventsGateway.NewTicketLotFirestoreRepository(fbApp)
+	ticketLotRepo, err := ticketsGateway.NewTicketLotFirestoreRepository(fbApp)
 	if err != nil {
 		return nil, err
 	}
 
-	purchasedTicketRepo, err := eventsGateway.NewPurchasedTicketFirestoreRepository(fbApp)
+	purchasedTicketRepo, err := ticketsGateway.NewPurchasedTicketFirestoreRepository(fbApp)
 	if err != nil {
 		return nil, err
 	}
 
-	orderRepo, err := eventsGateway.NewOrderFirestoreRepository(fbApp)
+	orderRepo, err := orderGateway.NewOrderFirestoreRepository(fbApp)
 	if err != nil {
 		return nil, err
 	}

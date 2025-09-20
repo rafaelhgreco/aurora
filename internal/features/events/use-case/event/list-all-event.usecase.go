@@ -19,7 +19,7 @@ func NewListAllEventUsecase(repo domain.EventRepository) *ListAllEventUsecase {
 func (uc *ListAllEventUsecase) Execute(ctx context.Context, filter map[string]interface{}) ([]*domain.Event, error) {
 	events, err := uc.repo.ListAll(ctx, filter)
 	for _, event := range events {
-		if status := event.DetermineStatus(); status != event.Status {
+		if status := event.DetermineStatus(); status != event.Status && event.Status != domain.EVENT_CANCELLED {
 			event.Status = status
 			event.UpdatedAt = time.Now()
 			_, err = uc.repo.Update(ctx, event)

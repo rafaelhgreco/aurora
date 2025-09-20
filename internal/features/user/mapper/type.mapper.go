@@ -1,8 +1,6 @@
 package mapper
 
 import (
-	"fmt"
-
 	"aurora.com/aurora-backend/internal/features/user/domain"
 	"aurora.com/aurora-backend/internal/features/user/dto"
 )
@@ -13,10 +11,8 @@ func mapStringToUserType(typeStr string) (domain.UserType, error) {
 		return domain.ADMIN, nil
 	case "COLLABORATOR":
 		return domain.COLLABORATOR, nil
-	case "COMMON":
-		return domain.COMMON, nil
 	default:
-		return 0, fmt.Errorf("invalid user type: %s", typeStr)
+		return domain.COMMON, nil
 	}
 }
 

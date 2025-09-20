@@ -1,0 +1,38 @@
+# .air.toml - Versão Corrigida e Mais Robusta
+
+# O diretório raiz onde o Air deve observar as mudanças.
+root = "."
+# O diretório para arquivos temporários.
+tmp_dir = "tmp"
+
+[build]
+# O comando para construir sua aplicação.
+# Ele compila o pacote em './api' e gera o executável 'main.exe' na pasta 'tmp'.
+cmd = "go build -o ./tmp/main.exe ./api"
+
+# O binário que o Air deve executar após a compilação.
+bin = "tmp/main.exe"
+
+# Atraso em milissegundos para esperar antes de reconstruir.
+delay = 1000 # ms
+
+# Extensões de arquivo para observar. Adicionei .env para reiniciar se as chaves mudarem.
+include_ext = ["go", "tpl", "tmpl", "html", "env"]
+
+# Pastas para ignorar.
+exclude_dir = ["assets", "tmp", "vendor"]
+
+# Arquivo de log para o processo de build.
+log = "air_build.log"
+
+[log]
+# Adiciona um timestamp aos logs.
+time = true
+
+[misc]
+# Garante que a pasta tmp seja limpa ao sair.
+clean_on_exit = true
+
+[screen]
+# Limpa o terminal a cada reinicialização para uma visualização mais limpa.
+clear_on_rebuild = true

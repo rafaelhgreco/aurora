@@ -7,19 +7,27 @@ import (
 )
 
 type CreateUserUseCase struct {
-	userRepo domain.UserRepository
-	hasher domain.PasswordHasher
+	userRepo   domain.UserRepository
+	authClient domain.AuthClient
 }
 
-func NewCreateUserUseCase(repo domain.UserRepository, hasher domain.PasswordHasher) *CreateUserUseCase {
-	return &CreateUserUseCase{userRepo: repo, hasher: hasher}
+func NewCreateUserUseCase(repo domain.UserRepository, authClient domain.AuthClient) *CreateUserUseCase {
+	return &CreateUserUseCase{userRepo: repo, authClient: authClient}
 }
 
 func (uc *CreateUserUseCase) Execute(ctx context.Context, user *domain.User) (*domain.User, error) {
-	hashed, err := uc.hasher.Hash(ctx, user.Password)
+	uid, err := uc.authClient.CreateUser(ctx, user)
 	if err != nil {
 		return nil, err
 	}
-	user.Password = hashed
-	return uc.userRepo.Save(ctx, user)
+
+	user.ID = uid
+	user.Password = ""
+
+	savedUser, err := uc.userRepo.Save(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+
+	return savedUser, nil
 }

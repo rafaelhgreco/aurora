@@ -8,9 +8,10 @@ import (
 
 type IEventService interface {
 	Save(ctx context.Context, req *dto.CreateEventRequest ) (error)
-	// FindByID(id string) (interface{}, error)
+	FindByID(ctx context.Context, id string) (req *dto.EventResponse, err error)
+	ListEvents(ctx context.Context, filter map[string]interface{}) ([]*dto.EventResponse, error)
 	// UpdateEvent(id string, data interface{}) error
 	// DeleteEvent(id string) error
-	// ListEvents(filter map[string]interface{}) ([]interface{}, error)
+
 	// FindByTitle(title string) (interface{}, error)
 }

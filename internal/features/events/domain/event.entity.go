@@ -39,8 +39,21 @@ type Event struct {
 	EndTime     time.Time `firestore:"end_time"`
 	Location    string `firestore:"location"`
 	TotalTickets      int         `firestore:"totalTickets"`    
-    AvailableTickets  int         `firestore:"availableTickets"`  
-    Status  	EventStatus `firestore:"status"`            
+    AvailableTickets  int         `firestore:"availableTickets"`          
 	CreatedAt   time.Time `firestore:"created_at"`
 	UpdatedAt   time.Time `firestore:"updated_at"`
+}
+
+func (e *Event) DetermineStatus() EventStatus {
+	now := time.Now()
+	if e.AvailableTickets <= 0 {
+		return EVENT_SOLD_OUT
+	}
+	if now.Before(e.StartTime) {
+		return EVENT_SCHEDULED
+	}
+	if now.After(e.EndTime) {
+		return EVENT_FINISHED
+	}
+	return EVENT_OPEN_FOR_SALE
 }

@@ -63,7 +63,7 @@ func (r *EventFirestoreRepository) Delete(ctx context.Context, id string) error 
     return err
 }
 
-func (r *EventFirestoreRepository) ListAll(ctx context.Context) ([]*domain.Event, error) {
+func (r *EventFirestoreRepository) ListAll(ctx context.Context, filter map[string]interface{}) ([]*domain.Event, error) {
 	iter := r.client.Collection(eventCollection).Documents(ctx)
 	defer iter.Stop()
 	var events []*domain.Event

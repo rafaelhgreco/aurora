@@ -13,7 +13,6 @@ import (
 	userService "aurora.com/aurora-backend/internal/features/user/service"
 
 	// Events imports
-	"aurora.com/aurora-backend/internal/features/events"
 	eventsController "aurora.com/aurora-backend/internal/features/events/controller"
 	eventsDomain "aurora.com/aurora-backend/internal/features/events/domain"
 	eventsFactory "aurora.com/aurora-backend/internal/features/events/factory"
@@ -74,6 +73,8 @@ func Build() (*Container, error) {
 	eventUseCaseFactory := eventsFactory.NewUseCaseFactory(eventRepoImpl)
 	eventSvc := eventsService.NewEventService(
 		eventUseCaseFactory.CreateEvent,
+		eventUseCaseFactory.FindByIDEvent,
+		eventUseCaseFactory.ListAllEvent,
 	)
 	eventCtrl := eventsController.NewEventController(eventSvc)
 
@@ -102,12 +103,6 @@ func Build() (*Container, error) {
 			v1.POST("/auth/login", userCtrl.Login)
 			v1.POST("/users", userCtrl.CreateUser)
 
-			// Rota de teste dos repositórios
-			v1.GET("/test/repositories", func(c *gin.Context) {
-				events.TestRepositories()
-				c.JSON(200, gin.H{"message": "Teste dos repositórios executado. Verifique os logs."})
-			})
-
 			// Rotas protegidas
 			protectedRoutes := v1.Group("/")
 			protectedRoutes.Use(authMw)
@@ -122,7 +117,9 @@ func Build() (*Container, error) {
 				eventRoutes := protectedRoutes.Group("/events")
 				{
 					eventRoutes.POST("/", eventCtrl.CreateEvent)
-					// Outras rotas de eventos podem ser adicionadas aqui
+					eventRoutes.GET("/:id", eventCtrl.GetEvent)
+					eventRoutes.GET("/", eventCtrl.ListEvents)
+					
 				}
 			}
 		}

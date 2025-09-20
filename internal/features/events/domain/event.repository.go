@@ -9,6 +9,6 @@ type EventRepository interface {
     FindByID(ctx context.Context, id string) (*Event, error)
     Update(ctx context.Context, event *Event) (*Event, error)
     Delete(ctx context.Context, id string) error
-    ListAll(ctx context.Context) ([]*Event, error)
+    ListAll(ctx context.Context, filter map[string]interface{}) ([]*Event, error)
     FindByTitle(ctx context.Context, title string) ([]*Event, error)
 }

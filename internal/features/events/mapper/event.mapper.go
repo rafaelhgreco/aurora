@@ -27,7 +27,11 @@ func FromCreateRequestToEventEntity(req *dto.CreateEventRequest) (*domain.Event,
 	}, nil
 }
 
-func FromEventEntityToEventResponse(entity *domain.Event) *dto.EventResponse {
+func FromEventEntityToResponse(entity *domain.Event) (*dto.EventResponse, error) {
+		if entity == nil {
+		return nil, errors.New("event entity is nil")
+	}
+	status := entity.DetermineStatus()
 	return &dto.EventResponse{
 		ID:              entity.ID,
 		Title:           entity.Title,
@@ -35,11 +39,22 @@ func FromEventEntityToEventResponse(entity *domain.Event) *dto.EventResponse {
 		Location:        entity.Location,
 		TotalTickets:    entity.TotalTickets,
 		AvailableTickets: entity.AvailableTickets,
-		Status:          entity.Status.String(),
 		StartTime: 	 entity.StartTime,
 		EndTime: 	 entity.EndTime,
+		Status: 	 status.String(),
 		CreatedAt:       entity.CreatedAt,
 		UpdatedAt:       entity.UpdatedAt,
-	}
+	}, nil
+}
 
+func FromEventEntitiesToResponses(entities []*domain.Event) ([]*dto.EventResponse, error) {
+	responses := make([]*dto.EventResponse, 0, len(entities))
+	for _, entity := range entities {
+		resp, err := FromEventEntityToResponse(entity)
+		if err != nil {
+			return nil, err
+		}
+		responses = append(responses, resp)
+	}
+	return responses, nil
 }

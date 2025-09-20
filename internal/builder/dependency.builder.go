@@ -8,14 +8,24 @@ import (
 	// User imports
 	userController "aurora.com/aurora-backend/internal/features/user/controller"
 	userFactory "aurora.com/aurora-backend/internal/features/user/factory"
-	userPersistence "aurora.com/aurora-backend/internal/features/user/gateway/repository"
+	userGateway "aurora.com/aurora-backend/internal/features/user/gateway/repository"
 	userSecurity "aurora.com/aurora-backend/internal/features/user/gateway/security"
 	userService "aurora.com/aurora-backend/internal/features/user/service"
 
 	// Events imports
-	"aurora.com/aurora-backend/internal/features/events"
+	eventsController "aurora.com/aurora-backend/internal/features/events/controller"
 	eventsDomain "aurora.com/aurora-backend/internal/features/events/domain"
+	eventsFactory "aurora.com/aurora-backend/internal/features/events/factory"
 	eventsGateway "aurora.com/aurora-backend/internal/features/events/gateway"
+	eventsService "aurora.com/aurora-backend/internal/features/events/service"
+
+	// Tickets imports
+	ticketsDomain "aurora.com/aurora-backend/internal/features/tickets/domain"
+	ticketsGateway "aurora.com/aurora-backend/internal/features/tickets/gateway"
+
+	// Orders imports
+	orderDomain "aurora.com/aurora-backend/internal/features/order/domain"
+	orderGateway "aurora.com/aurora-backend/internal/features/order/gateway"
 
 	"aurora.com/aurora-backend/internal/firebase"
 )
@@ -26,10 +36,11 @@ type Container struct {
 	FirebaseApp    *firebase.FirebaseApp
 
 	// Event repositories
+	EventController    *eventsController.EventController
 	EventRepo           eventsDomain.EventRepository
-	TicketLotRepo       eventsDomain.TicketLotRepository
-	PurchasedTicketRepo eventsDomain.PurchasedTicketRepository
-	OrderRepo           eventsDomain.OrderRepository
+	TicketLotRepo       ticketsDomain.TicketLotRepository
+	PurchasedTicketRepo ticketsDomain.PurchasedTicketRepository
+	OrderRepo           orderDomain.OrderRepository
 }
 
 func Build() (*Container, error) {
@@ -45,7 +56,7 @@ func Build() (*Container, error) {
 	}
 
 	authGateway := userSecurity.NewFirebaseAuthGateway(authClient)
-	userRepoImpl, err := userPersistence.NewUserFirestoreRepository(fbApp)
+	userRepoImpl, err := userGateway.NewUserFirestoreRepository(fbApp)
 	if err != nil {
 		return nil, err
 	}
@@ -62,22 +73,31 @@ func Build() (*Container, error) {
 	)
 	userCtrl := userController.NewUserController(userSvc)
 
-	eventRepo, err := eventsGateway.NewEventFirestoreRepository(fbApp)
+	eventRepoImpl, err := eventsGateway.NewEventFirestoreRepository(fbApp)
 	if err != nil {
 		return nil, err
 	}
 
-	ticketLotRepo, err := eventsGateway.NewTicketLotFirestoreRepository(fbApp)
+	eventUseCaseFactory := eventsFactory.NewUseCaseFactory(eventRepoImpl)
+	eventSvc := eventsService.NewEventService(
+		eventUseCaseFactory.CreateEvent,
+		eventUseCaseFactory.FindByIDEvent,
+		eventUseCaseFactory.ListAllEvent,
+		eventUseCaseFactory.SoftDeleteEvent,
+	)
+	eventCtrl := eventsController.NewEventController(eventSvc)
+
+	ticketLotRepo, err := ticketsGateway.NewTicketLotFirestoreRepository(fbApp)
 	if err != nil {
 		return nil, err
 	}
 
-	purchasedTicketRepo, err := eventsGateway.NewPurchasedTicketFirestoreRepository(fbApp)
+	purchasedTicketRepo, err := ticketsGateway.NewPurchasedTicketFirestoreRepository(fbApp)
 	if err != nil {
 		return nil, err
 	}
 
-	orderRepo, err := eventsGateway.NewOrderFirestoreRepository(fbApp)
+	orderRepo, err := orderGateway.NewOrderFirestoreRepository(fbApp)
 	if err != nil {
 		return nil, err
 	}
@@ -92,12 +112,6 @@ func Build() (*Container, error) {
 			v1.POST("/auth/login", userCtrl.Login)
 			v1.POST("/users", userCtrl.CreateUser)
 
-			// Rota de teste dos repositórios
-			v1.GET("/test/repositories", func(c *gin.Context) {
-				events.TestRepositories()
-				c.JSON(200, gin.H{"message": "Teste dos repositórios executado. Verifique os logs."})
-			})
-
 			// Rotas protegidas
 			protectedRoutes := v1.Group("/")
 			protectedRoutes.Use(authMw)
@@ -109,6 +123,14 @@ func Build() (*Container, error) {
 					userRoutes.DELETE("/:id", userCtrl.DeleteUser)
 					userRoutes.PUT("/me/password", userCtrl.ChangePassword)
 				}
+				eventRoutes := protectedRoutes.Group("/events")
+				{
+					eventRoutes.POST("/", eventCtrl.CreateEvent)
+					eventRoutes.GET("/:id", eventCtrl.GetEvent)
+					eventRoutes.GET("/", eventCtrl.ListEvents)
+					eventRoutes.PATCH("/:id/cancel", eventCtrl.SoftDeleteEvent)
+					
+				}
 			}
 		}
 	}
@@ -117,7 +139,7 @@ func Build() (*Container, error) {
 		Router:              router,
 		UserController:      userCtrl,
 		FirebaseApp:         fbApp,
-		EventRepo:           eventRepo,
+		EventRepo:           eventRepoImpl,
 		TicketLotRepo:       ticketLotRepo,
 		PurchasedTicketRepo: purchasedTicketRepo,
 		OrderRepo:           orderRepo,

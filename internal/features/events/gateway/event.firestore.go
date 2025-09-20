@@ -58,12 +58,16 @@ func (r *EventFirestoreRepository) Update(ctx context.Context, event *domain.Eve
 	return event, nil
 }
 
-func (r *EventFirestoreRepository) Delete(ctx context.Context, id string) error {
-    _, err := r.client.Collection(eventCollection).Doc(id).Delete(ctx)
+func (r *EventFirestoreRepository) SoftDelete(ctx context.Context, id string) error {
+    _, err := r.client.Collection(eventCollection).Doc(id).Update(ctx, []firestore.Update{
+        {Path: "status", Value: int(domain.EVENT_CANCELLED)},
+        {Path: "updated_at", Value: firestore.ServerTimestamp},
+    })
     return err
 }
 
-func (r *EventFirestoreRepository) ListAll(ctx context.Context) ([]*domain.Event, error) {
+
+func (r *EventFirestoreRepository) ListAll(ctx context.Context, filter map[string]interface{}) ([]*domain.Event, error) {
 	iter := r.client.Collection(eventCollection).Documents(ctx)
 	defer iter.Stop()
 	var events []*domain.Event

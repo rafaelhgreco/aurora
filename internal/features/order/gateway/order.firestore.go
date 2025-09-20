@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"aurora.com/aurora-backend/internal/features/events/domain"
+	"aurora.com/aurora-backend/internal/features/order/domain"
 	"aurora.com/aurora-backend/internal/firebase"
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"

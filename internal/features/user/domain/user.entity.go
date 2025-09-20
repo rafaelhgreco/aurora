@@ -15,7 +15,7 @@ const (
 )
 
 func (ut UserType) String() string {
-	return [...]string{"COMMON", "COLLABORATOR", "ADMIN"}[ut]
+	return [...]string{"COMMON", "COLLABORATOR", "ADMIN", ""}[ut]
 }
 
 type AdminProfile struct {

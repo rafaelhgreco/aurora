@@ -10,6 +10,12 @@ func FromCreateRequestToUserEntity(req *dto.CreateUserRequest) (*domain.User, er
 	if err != nil {
 		return nil, err
 	}
+	if req.Type == "" {
+		userType, err = mapStringToUserType(req.Type)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	adminData, collaboratorData := buildRoleSpecificData(userType, req)
 	return &domain.User{

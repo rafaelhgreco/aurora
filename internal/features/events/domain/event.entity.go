@@ -39,7 +39,8 @@ type Event struct {
 	EndTime     time.Time `firestore:"end_time"`
 	Location    string `firestore:"location"`
 	TotalTickets      int         `firestore:"totalTickets"`    
-    AvailableTickets  int         `firestore:"availableTickets"`          
+    AvailableTickets  int         `firestore:"availableTickets"`    
+	Status      EventStatus `firestore:"status"`      
 	CreatedAt   time.Time `firestore:"created_at"`
 	UpdatedAt   time.Time `firestore:"updated_at"`
 }

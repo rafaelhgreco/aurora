@@ -75,6 +75,7 @@ func Build() (*Container, error) {
 		eventUseCaseFactory.CreateEvent,
 		eventUseCaseFactory.FindByIDEvent,
 		eventUseCaseFactory.ListAllEvent,
+		eventUseCaseFactory.SoftDeleteEvent,
 	)
 	eventCtrl := eventsController.NewEventController(eventSvc)
 
@@ -119,6 +120,7 @@ func Build() (*Container, error) {
 					eventRoutes.POST("/", eventCtrl.CreateEvent)
 					eventRoutes.GET("/:id", eventCtrl.GetEvent)
 					eventRoutes.GET("/", eventCtrl.ListEvents)
+					eventRoutes.PATCH("/:id/cancel", eventCtrl.SoftDeleteEvent)
 					
 				}
 			}

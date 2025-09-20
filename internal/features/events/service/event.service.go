@@ -13,17 +13,20 @@ type eventService struct {
 	createEventUseCase  *usecase.CreateEventUseCase
 	FindByIDUseCase	*usecase.FindByIDEventUseCase
 	ListAllEventUseCase *usecase.ListAllEventUsecase
+	SoftDeleteEventUseCase *usecase.SoftDeleteEventUseCase
 }
 
 func NewEventService(
 	createEventUC *usecase.CreateEventUseCase,
 	findByIDUC *usecase.FindByIDEventUseCase,
 	listAllUC *usecase.ListAllEventUsecase,
+	deleteUc *usecase.SoftDeleteEventUseCase,
 ) IEventService {
 	return &eventService{
 		createEventUseCase:    createEventUC,
 		FindByIDUseCase:	findByIDUC,
 		ListAllEventUseCase:   listAllUC,
+		SoftDeleteEventUseCase: deleteUc,
 	}
 }
 
@@ -65,4 +68,8 @@ func (s *eventService) ListEvents(ctx context.Context, filter map[string]interfa
 		eventDTOs[i] = eventDTO
 	}
 	return eventDTOs, nil
+}
+
+func (s *eventService) SoftDeleteEvent(ctx context.Context, id string) error {
+    return s.SoftDeleteEventUseCase.Execute(ctx, id)
 }

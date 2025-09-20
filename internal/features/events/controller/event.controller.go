@@ -55,3 +55,17 @@ func (ctrl *EventController) ListEvents(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, events)
 }
+
+func (ctrl *EventController) SoftDeleteEvent(c *gin.Context) {
+	id := c.Param("id")
+	if id == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID is required"})
+		return
+	}
+	err := ctrl.eventService.SoftDeleteEvent(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.Status(http.StatusNoContent)
+}

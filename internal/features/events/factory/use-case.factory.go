@@ -9,6 +9,7 @@ type UseCaseFactory struct {
 	CreateEvent *usecase.CreateEventUseCase
 	FindByIDEvent *usecase.FindByIDEventUseCase
 	ListAllEvent *usecase.ListAllEventUsecase
+	SoftDeleteEvent *usecase.SoftDeleteEventUseCase
 }
 
 func NewUseCaseFactory(
@@ -18,5 +19,6 @@ func NewUseCaseFactory(
 		CreateEvent: usecase.NewCreateEventUseCase(eventRepo),
 		FindByIDEvent: usecase.NewFindByIDEventUseCase(eventRepo),
 		ListAllEvent: usecase.NewListAllEventUsecase(eventRepo),
+		SoftDeleteEvent: usecase.NewSoftDeleteEventUseCase(eventRepo),
 	}
 }

@@ -35,6 +35,11 @@ type AuthClient interface {
 	CreateUser(ctx context.Context, user *User) (string, error) 
 }
 
+type ChangePasswordInput struct {
+	UserID string
+	NewPassword string
+}
+
 
 type User struct {
 	ID        string 	`firestore:"-"`
@@ -46,10 +51,6 @@ type User struct {
 	Type      UserType  `firestore:"type"`
 	AdminData *AdminProfile `firestore:"adminData,omitempty"`
 	CollaboratorData *CollaboratorProfile `firestore:"collaboratorData,omitempty"`
-}
-
-type PasswordHasher interface {
-    Hash(ctx context.Context, plain string) (string, error)
 }
 
 type ErrUserNotFound struct {

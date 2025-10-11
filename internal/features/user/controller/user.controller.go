@@ -6,17 +6,29 @@ import (
 	"aurora.com/aurora-backend/internal/features/user/dto"
 	"github.com/gin-gonic/gin"
 
+	"aurora.com/aurora-backend/internal/features/user/mapper"
 	securityDTO "aurora.com/aurora-backend/internal/features/user/security/dto"
-	userservice "aurora.com/aurora-backend/internal/features/user/service"
+	userAuthUseCase "aurora.com/aurora-backend/internal/features/user/security/use-case"
+	userUseCase "aurora.com/aurora-backend/internal/features/user/use-case"
 )
 
 type UserController struct {
-	userService userservice.IUserService
+	createUser *userUseCase.CreateUserUseCase
+	updateUser *userUseCase.UpdateUserUseCase
+	getUserById *userUseCase.GetUserByIDUseCase
+	deleteUser *userUseCase.DeleteUserUseCase
+	loginUser *userAuthUseCase.LoginUserUseCase
+	changePasswordUser *userAuthUseCase.ChangePasswordUseCase
 }
 
-func NewUserController(service userservice.IUserService ) *UserController {
+func NewUserController(createUser *userUseCase.CreateUserUseCase, updateUser *userUseCase.UpdateUserUseCase, getUserById *userUseCase.GetUserByIDUseCase, deleteUser *userUseCase.DeleteUserUseCase, loginUser *userAuthUseCase.LoginUserUseCase, changePasswordUser *userAuthUseCase.ChangePasswordUseCase ) *UserController {
 	return &UserController{
-		userService: service,
+		createUser: createUser,
+		getUserById: getUserById,
+		updateUser: updateUser,
+		deleteUser: deleteUser,
+		loginUser: loginUser,
+		changePasswordUser: changePasswordUser,
 	}
 }
 
@@ -27,13 +39,18 @@ func (ctrl *UserController) CreateUser(c *gin.Context) {
 		return
 	}
 
-	userResponse, err := ctrl.userService.Create(c.Request.Context(), &req)
+	userEntity, err := mapper.FromCreateRequestToUserEntity(&req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	_, err = ctrl.createUser.Execute(c.Request.Context(), userEntity)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, userResponse)
+	c.JSON(http.StatusCreated , gin.H{"message": "User created successfully"} )
 }
 
 func (ctrl *UserController) GetUser(c *gin.Context) {
@@ -43,11 +60,13 @@ func (ctrl *UserController) GetUser(c *gin.Context) {
 		return
 	}
 
-	userResponse, err := ctrl.userService.FindByID(c.Request.Context(), id)
+	userEntity, err := ctrl.getUserById.Execute(c.Request.Context(), id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
+
+	userResponse := mapper.FromUserEntityToUserResponse(userEntity)
 
 	c.JSON(http.StatusOK, userResponse)
 }
@@ -64,14 +83,18 @@ func (ctrl *UserController) UpdateUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
-	userResponse, err := ctrl.userService.Update(c.Request.Context(), id, &req)
+	userEntity, err := mapper.FromUpdateRequestToUserEntity(&req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	_, err = ctrl.updateUser.Execute(c.Request.Context(), id, userEntity)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, userResponse)
+	c.JSON(http.StatusOK, gin.H{"message": "User updated successfully"})
 }
 
 func (ctrl *UserController) DeleteUser(c *gin.Context) {
@@ -81,7 +104,7 @@ func (ctrl *UserController) DeleteUser(c *gin.Context) {
 		return
 	}
 
-	if err := ctrl.userService.Delete(c.Request.Context(), id); err != nil {
+	if err := ctrl.deleteUser.Execute(c.Request.Context(), id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -96,24 +119,26 @@ func (ctrl *UserController) Login(c *gin.Context) {
 		return
 	}
 
-	loginResponse, err := ctrl.userService.Login(c.Request.Context(), req.IDToken)
+	loginResponse, accessToken, refreshToken, err := ctrl.loginUser.Execute(c.Request.Context(), req.IDToken)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, loginResponse)
+	c.JSON(http.StatusOK, gin.H{
+        "user":          loginResponse,
+        "access_token":  accessToken,
+        "refresh_token": refreshToken,
+    })
 }
 
 func (ctrl *UserController) ChangePassword(c *gin.Context) {
-	// O UID não vem mais da URL. Ele é injetado de forma segura pelo middleware.
 	uid, exists := c.Get("uid")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User UID not found in context"})
 		return
 	}
 	
-	// Convertemos o uid (que é interface{}) para string
 	userID, ok := uid.(string)
 	if !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "UID in context is not a string"})
@@ -125,9 +150,10 @@ func (ctrl *UserController) ChangePassword(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
-	if err := ctrl.userService.ChangePassword(c.Request.Context(), userID, &req); err != nil {
-		// ...
+	input := mapper.FromChangePasswordRequestToDomain(userID, &req)
+	err := ctrl.changePasswordUser.Execute(c.Request.Context(), input.UserID, input.NewPassword)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 

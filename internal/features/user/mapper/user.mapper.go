@@ -2,10 +2,11 @@ package mapper
 
 import (
 	"aurora.com/aurora-backend/internal/features/user/domain"
-	"aurora.com/aurora-backend/internal/features/user/dto"
+	domainDTO "aurora.com/aurora-backend/internal/features/user/dto"
+	securityDTO "aurora.com/aurora-backend/internal/features/user/security/dto"
 )
 
-func FromCreateRequestToUserEntity(req *dto.CreateUserRequest) (*domain.User, error) {
+func FromCreateRequestToUserEntity(req *domainDTO.CreateUserRequest) (*domain.User, error) {
 	userType, err := mapStringToUserType(req.Type)
 	if err != nil {
 		return nil, err
@@ -28,8 +29,8 @@ func FromCreateRequestToUserEntity(req *dto.CreateUserRequest) (*domain.User, er
 	}, nil
 }
 
-func FromUserEntityToUserResponse(entity *domain.User) *dto.UserResponse {
-	return &dto.UserResponse{
+func FromUserEntityToUserResponse(entity *domain.User) *domainDTO.UserResponse {
+	return &domainDTO.UserResponse{
 		ID:        entity.ID,
 		Name:      entity.Name,
 		Email:     entity.Email,
@@ -39,7 +40,7 @@ func FromUserEntityToUserResponse(entity *domain.User) *dto.UserResponse {
 }
 
 func FromUserEntityToSpecificResponse(entity *domain.User) interface{} {
-	base := dto.UserResponse{
+	base := domainDTO.UserResponse{
 		ID:        entity.ID,
 		Name:      entity.Name,
 		Email:     entity.Email,
@@ -49,15 +50,36 @@ func FromUserEntityToSpecificResponse(entity *domain.User) interface{} {
 
 	switch entity.Type {
 	case domain.ADMIN:
-		return &dto.AdminUserResponse{
+		return &domainDTO.AdminUserResponse{
 			UserResponse: base,
 			Permissions:      entity.AdminData.Permissions,
 		}
 	case domain.COLLABORATOR:
-		return &dto.CollaboratorUserResponse{
+		return &domainDTO.CollaboratorUserResponse{
 			UserResponse: base,
 			TeamID:           entity.CollaboratorData.TeamID,
 		}
 	}
 	return &base
+}
+
+func FromUpdateRequestToUserEntity(req *domainDTO.UpdateUserRequest) (*domain.User, error) {
+    return &domain.User{
+        Name:  derefString(req.Name),
+        Email: derefString(req.Email),
+    }, nil
+}
+
+func derefString(s *string) string {
+    if s == nil {
+        return ""
+    }
+    return *s
+}
+
+func FromChangePasswordRequestToDomain(userID string, req *securityDTO.ChangePasswordRequest) *domain.ChangePasswordInput {
+    return &domain.ChangePasswordInput{
+        UserID:      userID,
+        NewPassword: req.NewPassword,
+    }
 }

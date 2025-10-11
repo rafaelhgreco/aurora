@@ -8,8 +8,8 @@ import (
 
 type UseCaseFactory struct {
 	CreateUser     *usecase.CreateUserUseCase
-	GetUser        *usecase.GetUserByIDUseCase
 	UpdateUser     *usecase.UpdateUserUseCase
+	GetUserByID    *usecase.GetUserByIDUseCase
 	DeleteUser     *usecase.DeleteUserUseCase
 	LoginUser      *securityUseCase.LoginUserUseCase
 	ChangePassword *securityUseCase.ChangePasswordUseCase
@@ -17,12 +17,11 @@ type UseCaseFactory struct {
 
 func NewUseCaseFactory(
     userRepo domain.UserRepository, 
-    passwordHasher domain.PasswordHasher, 
     authClient domain.AuthClient,
 ) *UseCaseFactory {
 	return &UseCaseFactory{
 		CreateUser: usecase.NewCreateUserUseCase(userRepo, authClient),
-		GetUser:    usecase.NewGetUserByIDUseCase(userRepo),
+		GetUserByID:    usecase.NewGetUserByIDUseCase(userRepo),
 		UpdateUser: usecase.NewUpdateUserUseCase(userRepo),
 		DeleteUser: usecase.NewDeleteUserUseCase(userRepo),
 

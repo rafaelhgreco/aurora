@@ -10,7 +10,6 @@ import (
 	userFactory "aurora.com/aurora-backend/internal/features/user/factory"
 	userGateway "aurora.com/aurora-backend/internal/features/user/gateway/repository"
 	userSecurity "aurora.com/aurora-backend/internal/features/user/gateway/security"
-	userService "aurora.com/aurora-backend/internal/features/user/service"
 
 	// Events imports
 	eventsController "aurora.com/aurora-backend/internal/features/events/controller"
@@ -59,18 +58,9 @@ func Build() (*Container, error) {
 	if err != nil {
 		return nil, err
 	}
-	passwordHasher := userSecurity.NewBcryptHasher()
 
-	userUseCaseFactory := userFactory.NewUseCaseFactory(userRepoImpl, passwordHasher, authGateway)
-	userSvc := userService.NewUserService(
-		userUseCaseFactory.CreateUser,
-		userUseCaseFactory.GetUser,
-		userUseCaseFactory.UpdateUser,
-		userUseCaseFactory.DeleteUser,
-		userUseCaseFactory.LoginUser,
-		userUseCaseFactory.ChangePassword,
-	)
-	userCtrl := userController.NewUserController(userSvc)
+	userUseCaseFactory := userFactory.NewUseCaseFactory(userRepoImpl, authGateway)
+	userCtrl := userController.NewUserController(userUseCaseFactory.CreateUser, userUseCaseFactory.UpdateUser,userUseCaseFactory.GetUserByID, userUseCaseFactory.DeleteUser, userUseCaseFactory.LoginUser, userUseCaseFactory.ChangePassword)
 
 	eventRepoImpl, err := eventsGateway.NewEventFirestoreRepository(fbApp)
 	if err != nil {

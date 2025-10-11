@@ -13,21 +13,21 @@ import (
 )
 
 type UserController struct {
-	createUser *userUseCase.CreateUserUseCase
-	updateUser *userUseCase.UpdateUserUseCase
-	getUserById *userUseCase.GetUserByIDUseCase
-	deleteUser *userUseCase.DeleteUserUseCase
-	loginUser *userAuthUseCase.LoginUserUseCase
+	createUser         *userUseCase.CreateUserUseCase
+	updateUser         *userUseCase.UpdateUserUseCase
+	getUserById        *userUseCase.GetUserByIDUseCase
+	deleteUser         *userUseCase.DeleteUserUseCase
+	loginUser          *userAuthUseCase.LoginUserUseCase
 	changePasswordUser *userAuthUseCase.ChangePasswordUseCase
 }
 
-func NewUserController(createUser *userUseCase.CreateUserUseCase, updateUser *userUseCase.UpdateUserUseCase, getUserById *userUseCase.GetUserByIDUseCase, deleteUser *userUseCase.DeleteUserUseCase, loginUser *userAuthUseCase.LoginUserUseCase, changePasswordUser *userAuthUseCase.ChangePasswordUseCase ) *UserController {
+func NewUserController(createUser *userUseCase.CreateUserUseCase, updateUser *userUseCase.UpdateUserUseCase, getUserById *userUseCase.GetUserByIDUseCase, deleteUser *userUseCase.DeleteUserUseCase, loginUser *userAuthUseCase.LoginUserUseCase, changePasswordUser *userAuthUseCase.ChangePasswordUseCase) *UserController {
 	return &UserController{
-		createUser: createUser,
-		getUserById: getUserById,
-		updateUser: updateUser,
-		deleteUser: deleteUser,
-		loginUser: loginUser,
+		createUser:         createUser,
+		getUserById:        getUserById,
+		updateUser:         updateUser,
+		deleteUser:         deleteUser,
+		loginUser:          loginUser,
 		changePasswordUser: changePasswordUser,
 	}
 }
@@ -50,7 +50,7 @@ func (ctrl *UserController) CreateUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated , gin.H{"message": "User created successfully"} )
+	c.JSON(http.StatusCreated, gin.H{"message": "User created successfully"})
 }
 
 func (ctrl *UserController) GetUser(c *gin.Context) {
@@ -126,10 +126,10 @@ func (ctrl *UserController) Login(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-        "user":          loginResponse,
-        "access_token":  accessToken,
-        "refresh_token": refreshToken,
-    })
+		"user":          loginResponse,
+		"access_token":  accessToken,
+		"refresh_token": refreshToken,
+	})
 }
 
 func (ctrl *UserController) ChangePassword(c *gin.Context) {
@@ -138,13 +138,13 @@ func (ctrl *UserController) ChangePassword(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User UID not found in context"})
 		return
 	}
-	
+
 	userID, ok := uid.(string)
 	if !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "UID in context is not a string"})
 		return
 	}
-	
+
 	var req securityDTO.ChangePasswordRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

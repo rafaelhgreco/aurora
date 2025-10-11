@@ -7,13 +7,13 @@ import (
 )
 
 type LoginUserUseCase struct {
-	userRepo domain.UserRepository
+	userRepo   domain.UserRepository
 	authClient domain.AuthClient
 }
 
 func NewLoginUserUseCase(userRepo domain.UserRepository, authClient domain.AuthClient) *LoginUserUseCase {
 	return &LoginUserUseCase{
-		userRepo: userRepo,
+		userRepo:   userRepo,
 		authClient: authClient,
 	}
 }

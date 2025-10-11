@@ -23,7 +23,7 @@ type AdminProfile struct {
 }
 
 type CollaboratorProfile struct {
-	TeamID string
+	TeamID   string
 	Projects []string
 }
 
@@ -32,24 +32,23 @@ type AuthClient interface {
 	GenerateAccessToken(ctx context.Context, userID string) (string, error)
 	GenerateRefreshToken(ctx context.Context, userID string) (string, error)
 	UpdateUser(ctx context.Context, uid string, params interface{}) (interface{}, error)
-	CreateUser(ctx context.Context, user *User) (string, error) 
+	CreateUser(ctx context.Context, user *User) (string, error)
 }
 
 type ChangePasswordInput struct {
-	UserID string
+	UserID      string
 	NewPassword string
 }
 
-
 type User struct {
-	ID        string 	`firestore:"-"`
+	ID        string    `firestore:"-"`
 	Name      string    `firestore:"name"`
 	Email     string    `firestore:"email"`
 	Password  string    `firestore:"password"`
 	CreatedAt time.Time `firestore:"createdAt"`
 
-	Type      UserType  `firestore:"type"`
-	AdminData *AdminProfile `firestore:"adminData,omitempty"`
+	Type             UserType             `firestore:"type"`
+	AdminData        *AdminProfile        `firestore:"adminData,omitempty"`
 	CollaboratorData *CollaboratorProfile `firestore:"collaboratorData,omitempty"`
 }
 

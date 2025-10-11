@@ -10,18 +10,17 @@ import (
 )
 
 type EventController struct {
-	createEvent *usecase.CreateEventUseCase
-	findByIDEvent *usecase.FindByIDEventUseCase
-	listAllEvent *usecase.ListAllEventUsecase
+	createEvent     *usecase.CreateEventUseCase
+	findByIDEvent   *usecase.FindByIDEventUseCase
+	listAllEvent    *usecase.ListAllEventUsecase
 	softDeleteEvent *usecase.SoftDeleteEventUseCase
-
 }
 
 func NewEventController(createEvent *usecase.CreateEventUseCase, findByIDEvent *usecase.FindByIDEventUseCase, listAllEvent *usecase.ListAllEventUsecase, softDeleteEvent *usecase.SoftDeleteEventUseCase) *EventController {
 	return &EventController{
-		createEvent: createEvent,
-		findByIDEvent: findByIDEvent,
-		listAllEvent: listAllEvent,
+		createEvent:     createEvent,
+		findByIDEvent:   findByIDEvent,
+		listAllEvent:    listAllEvent,
 		softDeleteEvent: softDeleteEvent,
 	}
 }

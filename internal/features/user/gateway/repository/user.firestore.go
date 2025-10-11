@@ -33,7 +33,7 @@ func (r *UserFirestoreRepository) Save(ctx context.Context, user *domain.User) (
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return user, nil
 }
 
@@ -54,8 +54,7 @@ func (r *UserFirestoreRepository) FindByID(ctx context.Context, id string) (*dom
 	return &user, nil
 }
 
-func (r *UserFirestoreRepository) Update(ctx context.Context, user *domain.User) (*
-domain.User, error) {
+func (r *UserFirestoreRepository) Update(ctx context.Context, user *domain.User) (*domain.User, error) {
 	_, err := r.client.Collection(userCollection).Doc(user.ID).Set(ctx, user)
 	if err != nil {
 		return nil, err

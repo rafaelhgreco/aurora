@@ -11,7 +11,6 @@ import (
 	"aurora.com/aurora-backend/internal/firebase"
 )
 
-
 const eventCollection = "events"
 
 type EventFirestoreRepository struct {
@@ -21,7 +20,7 @@ type EventFirestoreRepository struct {
 // NewEventFirestoreRepository cria uma nova instância do repositório do Firestore.
 func NewEventFirestoreRepository(fbApp *firebase.FirebaseApp) (domain.EventRepository, error) {
 	client, err := fbApp.Firestore(context.Background())
-		if err != nil {
+	if err != nil {
 		log.Fatalf("Falha ao criar cliente do Firestore: %v", err)
 		return nil, err
 	}
@@ -59,13 +58,12 @@ func (r *EventFirestoreRepository) Update(ctx context.Context, event *domain.Eve
 }
 
 func (r *EventFirestoreRepository) SoftDelete(ctx context.Context, id string) error {
-    _, err := r.client.Collection(eventCollection).Doc(id).Update(ctx, []firestore.Update{
-        {Path: "status", Value: int(domain.EVENT_CANCELLED)},
-        {Path: "updated_at", Value: firestore.ServerTimestamp},
-    })
-    return err
+	_, err := r.client.Collection(eventCollection).Doc(id).Update(ctx, []firestore.Update{
+		{Path: "status", Value: int(domain.EVENT_CANCELLED)},
+		{Path: "updated_at", Value: firestore.ServerTimestamp},
+	})
+	return err
 }
-
 
 func (r *EventFirestoreRepository) ListAll(ctx context.Context, filter map[string]interface{}) ([]*domain.Event, error) {
 	iter := r.client.Collection(eventCollection).Documents(ctx)
@@ -100,7 +98,7 @@ func (r *EventFirestoreRepository) FindByTitle(ctx context.Context, title string
 				break
 			}
 			return nil, err
-		}	
+		}
 		var event domain.Event
 		if err := doc.DataTo(&event); err != nil {
 			return nil, err

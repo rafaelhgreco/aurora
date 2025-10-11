@@ -21,35 +21,35 @@ func FromCreateRequestToEventEntity(req *dto.CreateEventRequest) (*domain.Event,
 		return nil, errors.New("end_time must be after start_time")
 	}
 	return &domain.Event{
-		Title:        req.Title,
-		Description:  req.Description,
-		StartTime:    startTime,
-		EndTime:      endTime,
-		Location:     req.Location,
-		TotalTickets: req.TotalTickets,
+		Title:            req.Title,
+		Description:      req.Description,
+		StartTime:        startTime,
+		EndTime:          endTime,
+		Location:         req.Location,
+		TotalTickets:     req.TotalTickets,
 		AvailableTickets: req.TotalTickets,
-		Status:       domain.EVENT_SCHEDULED,
-        CreatedAt:    time.Now(),
-        UpdatedAt:    time.Now(),
+		Status:           domain.EVENT_SCHEDULED,
+		CreatedAt:        time.Now(),
+		UpdatedAt:        time.Now(),
 	}, nil
 }
 
 func FromEventEntityToResponse(entity *domain.Event) (*dto.EventResponse, error) {
-		if entity == nil {
+	if entity == nil {
 		return nil, errors.New("event entity is nil")
 	}
 	return &dto.EventResponse{
-		ID:              entity.ID,
-		Title:           entity.Title,
-		Description:     entity.Description,
-		Location:        entity.Location,
-		TotalTickets:    entity.TotalTickets,
+		ID:               entity.ID,
+		Title:            entity.Title,
+		Description:      entity.Description,
+		Location:         entity.Location,
+		TotalTickets:     entity.TotalTickets,
 		AvailableTickets: entity.AvailableTickets,
-		StartTime: 	 entity.StartTime,
-		EndTime: 	 entity.EndTime,
-		Status: 	 entity.Status.String(),
-		CreatedAt:       entity.CreatedAt,
-		UpdatedAt:       entity.UpdatedAt,
+		StartTime:        entity.StartTime,
+		EndTime:          entity.EndTime,
+		Status:           entity.Status.String(),
+		CreatedAt:        entity.CreatedAt,
+		UpdatedAt:        entity.UpdatedAt,
 	}, nil
 }
 
@@ -66,20 +66,20 @@ func FromEventEntitiesToResponses(entities []*domain.Event) ([]*dto.EventRespons
 }
 
 func FromSoftDeleteEventEntity(entity *domain.Event) (*dto.EventResponse, error) {
-    if entity == nil {
-        return nil, errors.New("event entity is nil")
-    }
-    return &dto.EventResponse{
-        ID:               entity.ID,
-        Title:            entity.Title,
-        Description:      entity.Description,
-        Location:         entity.Location,
-        TotalTickets:     entity.TotalTickets,
-        AvailableTickets: entity.AvailableTickets,
-        StartTime:        entity.StartTime,
-        EndTime:          entity.EndTime,
-        Status:           entity.Status.String(),
-        CreatedAt:        entity.CreatedAt,
-        UpdatedAt:        entity.UpdatedAt,
-    }, nil
+	if entity == nil {
+		return nil, errors.New("event entity is nil")
+	}
+	return &dto.EventResponse{
+		ID:               entity.ID,
+		Title:            entity.Title,
+		Description:      entity.Description,
+		Location:         entity.Location,
+		TotalTickets:     entity.TotalTickets,
+		AvailableTickets: entity.AvailableTickets,
+		StartTime:        entity.StartTime,
+		EndTime:          entity.EndTime,
+		Status:           entity.Status.String(),
+		CreatedAt:        entity.CreatedAt,
+		UpdatedAt:        entity.UpdatedAt,
+	}, nil
 }

@@ -52,34 +52,34 @@ func FromUserEntityToSpecificResponse(entity *domain.User) interface{} {
 	case domain.ADMIN:
 		return &domainDTO.AdminUserResponse{
 			UserResponse: base,
-			Permissions:      entity.AdminData.Permissions,
+			Permissions:  entity.AdminData.Permissions,
 		}
 	case domain.COLLABORATOR:
 		return &domainDTO.CollaboratorUserResponse{
 			UserResponse: base,
-			TeamID:           entity.CollaboratorData.TeamID,
+			TeamID:       entity.CollaboratorData.TeamID,
 		}
 	}
 	return &base
 }
 
 func FromUpdateRequestToUserEntity(req *domainDTO.UpdateUserRequest) (*domain.User, error) {
-    return &domain.User{
-        Name:  derefString(req.Name),
-        Email: derefString(req.Email),
-    }, nil
+	return &domain.User{
+		Name:  derefString(req.Name),
+		Email: derefString(req.Email),
+	}, nil
 }
 
 func derefString(s *string) string {
-    if s == nil {
-        return ""
-    }
-    return *s
+	if s == nil {
+		return ""
+	}
+	return *s
 }
 
 func FromChangePasswordRequestToDomain(userID string, req *securityDTO.ChangePasswordRequest) *domain.ChangePasswordInput {
-    return &domain.ChangePasswordInput{
-        UserID:      userID,
-        NewPassword: req.NewPassword,
-    }
+	return &domain.ChangePasswordInput{
+		UserID:      userID,
+		NewPassword: req.NewPassword,
+	}
 }

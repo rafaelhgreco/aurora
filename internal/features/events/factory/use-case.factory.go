@@ -6,19 +6,19 @@ import (
 )
 
 type UseCaseFactory struct {
-	CreateEvent *usecase.CreateEventUseCase
-	FindByIDEvent *usecase.FindByIDEventUseCase
-	ListAllEvent *usecase.ListAllEventUsecase
+	CreateEvent     *usecase.CreateEventUseCase
+	FindByIDEvent   *usecase.FindByIDEventUseCase
+	ListAllEvent    *usecase.ListAllEventUsecase
 	SoftDeleteEvent *usecase.SoftDeleteEventUseCase
 }
 
 func NewUseCaseFactory(
 	eventRepo domain.EventRepository,
-	) *UseCaseFactory {
+) *UseCaseFactory {
 	return &UseCaseFactory{
-		CreateEvent: usecase.NewCreateEventUseCase(eventRepo),
-		FindByIDEvent: usecase.NewFindByIDEventUseCase(eventRepo),
-		ListAllEvent: usecase.NewListAllEventUsecase(eventRepo),
+		CreateEvent:     usecase.NewCreateEventUseCase(eventRepo),
+		FindByIDEvent:   usecase.NewFindByIDEventUseCase(eventRepo),
+		ListAllEvent:    usecase.NewListAllEventUsecase(eventRepo),
 		SoftDeleteEvent: usecase.NewSoftDeleteEventUseCase(eventRepo),
 	}
 }

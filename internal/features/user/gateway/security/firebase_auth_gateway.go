@@ -41,7 +41,7 @@ func (g *FirebaseAuthGateway) GenerateAccessToken(ctx context.Context, userID st
 		"user_id": userID,
 		"exp":     time.Now().Add(time.Hour * 1).Unix(), // Expires in 1 hour
 	}
-	
+
 	// Create a new token object, specifying signing method and the claims
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
@@ -50,7 +50,7 @@ func (g *FirebaseAuthGateway) GenerateAccessToken(ctx context.Context, userID st
 	if err != nil {
 		return "", err
 	}
-	
+
 	return tokenString, nil
 }
 
@@ -61,13 +61,13 @@ func (g *FirebaseAuthGateway) GenerateRefreshToken(ctx context.Context, userID s
 		"user_id": userID,
 		"exp":     time.Now().Add(time.Hour * 24 * 30).Unix(), // Expires in 30 days
 	}
-	
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString(jwtSecretKey)
 	if err != nil {
 		return "", err
 	}
-	
+
 	return tokenString, nil
 }
 

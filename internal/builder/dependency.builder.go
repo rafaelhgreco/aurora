@@ -34,7 +34,7 @@ type Container struct {
 	FirebaseApp    *firebase.FirebaseApp
 
 	// Event repositories
-	EventController    *eventsController.EventController
+	EventController     *eventsController.EventController
 	EventRepo           eventsDomain.EventRepository
 	TicketLotRepo       ticketsDomain.TicketLotRepository
 	PurchasedTicketRepo ticketsDomain.PurchasedTicketRepository
@@ -60,7 +60,7 @@ func Build() (*Container, error) {
 	}
 
 	userUseCaseFactory := userFactory.NewUseCaseFactory(userRepoImpl, authGateway)
-	userCtrl := userController.NewUserController(userUseCaseFactory.CreateUser, userUseCaseFactory.UpdateUser,userUseCaseFactory.GetUserByID, userUseCaseFactory.DeleteUser, userUseCaseFactory.LoginUser, userUseCaseFactory.ChangePassword)
+	userCtrl := userController.NewUserController(userUseCaseFactory.CreateUser, userUseCaseFactory.UpdateUser, userUseCaseFactory.GetUserByID, userUseCaseFactory.DeleteUser, userUseCaseFactory.LoginUser, userUseCaseFactory.ChangePassword)
 
 	eventRepoImpl, err := eventsGateway.NewEventFirestoreRepository(fbApp)
 	if err != nil {
@@ -112,7 +112,7 @@ func Build() (*Container, error) {
 					eventRoutes.GET("/:id", eventCtrl.GetEvent)
 					eventRoutes.GET("/", eventCtrl.ListEvents)
 					eventRoutes.PATCH("/:id/cancel", eventCtrl.SoftDeleteEvent)
-					
+
 				}
 			}
 		}

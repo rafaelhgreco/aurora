@@ -12,7 +12,6 @@ import (
 
 const orderCollection = "orders"
 
-
 type OrderFirestoreRepository struct {
 	client *firestore.Client
 }

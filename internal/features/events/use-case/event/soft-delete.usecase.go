@@ -14,12 +14,16 @@ func NewSoftDeleteEventUseCase(repo domain.EventRepository) *SoftDeleteEventUseC
 	return &SoftDeleteEventUseCase{repo: repo}
 }
 
-func (uc *SoftDeleteEventUseCase) Execute(ctx context.Context, id string) error {
+func (uc *SoftDeleteEventUseCase) Execute(ctx context.Context, id string) (*domain.Event, error) {
     event, err := uc.repo.FindByID(ctx, id)
     if err != nil {
-        return err
+        return nil, err
     }
     event.Status = domain.EVENT_CANCELLED
     event.UpdatedAt = time.Now()
-    return uc.repo.SoftDelete(ctx, id)
+    err = uc.repo.SoftDelete(ctx, id)
+    if err != nil {
+        return nil, err
+    }
+    return event, nil
 }

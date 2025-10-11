@@ -17,7 +17,6 @@ import (
 	eventsDomain "aurora.com/aurora-backend/internal/features/events/domain"
 	eventsFactory "aurora.com/aurora-backend/internal/features/events/factory"
 	eventsGateway "aurora.com/aurora-backend/internal/features/events/gateway"
-	eventsService "aurora.com/aurora-backend/internal/features/events/service"
 
 	// Tickets imports
 	ticketsDomain "aurora.com/aurora-backend/internal/features/tickets/domain"
@@ -79,13 +78,7 @@ func Build() (*Container, error) {
 	}
 
 	eventUseCaseFactory := eventsFactory.NewUseCaseFactory(eventRepoImpl)
-	eventSvc := eventsService.NewEventService(
-		eventUseCaseFactory.CreateEvent,
-		eventUseCaseFactory.FindByIDEvent,
-		eventUseCaseFactory.ListAllEvent,
-		eventUseCaseFactory.SoftDeleteEvent,
-	)
-	eventCtrl := eventsController.NewEventController(eventSvc)
+	eventCtrl := eventsController.NewEventController(eventUseCaseFactory.CreateEvent, eventUseCaseFactory.FindByIDEvent, eventUseCaseFactory.ListAllEvent, eventUseCaseFactory.SoftDeleteEvent)
 
 	ticketLotRepo, err := ticketsGateway.NewTicketLotFirestoreRepository(fbApp)
 	if err != nil {

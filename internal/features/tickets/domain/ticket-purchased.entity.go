@@ -15,9 +15,9 @@ const (
 
 type Ticket struct {
 	ID            string       `firestore:"-"`
-	OrderID       string       `firestore:"orderId"`
-	EventID       string       `firestore:"eventId"`
-	UserID        string       `firestore:"userId"`
+	OrderId       string       `firestore:"orderId"`
+	EventId       string       `firestore:"eventId"`
+	UserId        string       `firestore:"userId"`
 	PurchasePrice float64      `firestore:"purchasePrice"`
 	PurchaseDate  time.Time    `firestore:"purchaseDate"`
 	QRCodeData    string       `firestore:"qrCodeData"`

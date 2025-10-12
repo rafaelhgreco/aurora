@@ -12,22 +12,8 @@ import (
 const ticketLotCollection = "ticket_lots"
 const purchasedTicketCollection = "purchased_tickets"
 
-type TicketLotFirestoreRepository struct {
-	client *firestore.Client
-}
-
 type PurchasedTicketFirestoreRepository struct {
 	client *firestore.Client
-}
-
-// NewTicketLotFirestoreRepository cria uma nova instância do repositório do Firestore.
-func NewTicketLotFirestoreRepository(fbApp *firebase.FirebaseApp) (domain.TicketLotRepository, error) {
-	client, err := fbApp.Firestore(context.Background())
-	if err != nil {
-		log.Fatalf("Falha ao criar cliente do Firestore: %v", err)
-		return nil, err
-	}
-	return &TicketLotFirestoreRepository{client: client}, nil
 }
 
 // NewPurchasedTicketFirestoreRepository cria uma nova instância do repositório do Firestore.
@@ -40,51 +26,6 @@ func NewPurchasedTicketFirestoreRepository(fbApp *firebase.FirebaseApp) (domain.
 	return &PurchasedTicketFirestoreRepository{client: client}, nil
 }
 
-// Métodos para TicketLotFirestoreRepository
-func (r *TicketLotFirestoreRepository) Save(ctx context.Context, lot *domain.Ticket) (*domain.Ticket, error) {
-	_, err := r.client.Collection(ticketLotCollection).Doc(lot.ID).Set(ctx, lot)
-	if err != nil {
-		return nil, err
-	}
-	return lot, nil
-}
-
-func (r *TicketLotFirestoreRepository) FindByID(ctx context.Context, id string) (*domain.Ticket, error) {
-	docSnap, err := r.client.Collection(ticketLotCollection).Doc(id).Get(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	var lot domain.Ticket
-	if err := docSnap.DataTo(&lot); err != nil {
-		return nil, err
-	}
-	lot.ID = docSnap.Ref.ID
-	return &lot, nil
-}
-
-func (r *TicketLotFirestoreRepository) ListByEventID(ctx context.Context, eventID string) ([]*domain.Ticket, error) {
-	iter := r.client.Collection(ticketLotCollection).Where("EventID", "==", eventID).Documents(ctx)
-	defer iter.Stop()
-
-	var lots []*domain.Ticket
-	for {
-		doc, err := iter.Next()
-		if err != nil {
-			break
-		}
-
-		var lot domain.Ticket
-		if err := doc.DataTo(&lot); err != nil {
-			return nil, err
-		}
-		lot.ID = doc.Ref.ID
-		lots = append(lots, &lot)
-	}
-	return lots, nil
-}
-
-// Métodos para PurchasedTicketFirestoreRepository
 func (r *PurchasedTicketFirestoreRepository) Save(ctx context.Context, ticket *domain.Ticket) (*domain.Ticket, error) {
 	_, err := r.client.Collection(purchasedTicketCollection).Doc(ticket.ID).Set(ctx, ticket)
 	if err != nil {

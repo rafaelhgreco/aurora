@@ -111,20 +111,20 @@ func (r *EventFirestoreRepository) FindByTitle(ctx context.Context, title string
 }
 
 func (r *EventFirestoreRepository) DecrementAvailableTickets(ctx context.Context, eventID string, amount int) error {
-    docRef := r.client.Collection(eventCollection).Doc(eventID)
-    return r.client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
-        doc, err := tx.Get(docRef)
-        if err != nil {
-            return err
-        }
-        var event domain.Event
-        if err := doc.DataTo(&event); err != nil {
-            return err
-        }
-        if event.AvailableTickets < amount {
-            return fmt.Errorf("not enough tickets available")
-        }
-        event.AvailableTickets -= amount
-        return tx.Set(docRef, event)
-    })
+	docRef := r.client.Collection(eventCollection).Doc(eventID)
+	return r.client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
+		doc, err := tx.Get(docRef)
+		if err != nil {
+			return err
+		}
+		var event domain.Event
+		if err := doc.DataTo(&event); err != nil {
+			return err
+		}
+		if event.AvailableTickets < amount {
+			return fmt.Errorf("not enough tickets available")
+		}
+		event.AvailableTickets -= amount
+		return tx.Set(docRef, event)
+	})
 }

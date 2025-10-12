@@ -13,12 +13,11 @@ const (
 	ticketCanceled
 )
 
-type PurchasedTicket struct {
+type Ticket struct {
 	ID            string       `firestore:"-"`
 	OrderID       string       `firestore:"orderId"`
 	EventID       string       `firestore:"eventId"`
 	UserID        string       `firestore:"userId"`
-	TicketLotID   string       `firestore:"ticketLotId"`
 	PurchasePrice float64      `firestore:"purchasePrice"`
 	PurchaseDate  time.Time    `firestore:"purchaseDate"`
 	QRCodeData    string       `firestore:"qrCodeData"`

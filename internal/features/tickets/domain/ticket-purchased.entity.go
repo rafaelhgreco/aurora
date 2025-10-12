@@ -22,6 +22,7 @@ type Ticket struct {
 	PurchaseDate  time.Time    `firestore:"purchaseDate"`
 	QRCodeData    string       `firestore:"qrCodeData"`
 	Status        TicketStatus `firestore:"status"`
+	Quantity      int          `firestore:"quantity"`
 	IssuedAt      time.Time    `firestore:"issuedAt"`
 	ValidUntil    time.Time    `firestore:"validUntil"`
 }

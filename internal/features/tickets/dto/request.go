@@ -7,4 +7,5 @@ type PurchaseTicketRequest struct {
 	PurchasePrice float64 `json:"purchase_price" binding:"required"`
 	QRCodeData    string  `json:"qrcode_data"`
 	ValidUntil    string  `json:"valid_until"`
+	Quantity      int     `json:"quantity" binding:"required,min=1"`
 }

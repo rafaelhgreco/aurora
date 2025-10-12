@@ -29,11 +29,11 @@ func (ctrl *TicketController) CreateTicket(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	_, err = ctrl.createTicket.Execute(c.Request.Context(), ticketDomain)
+	tickets, err := ctrl.createTicket.Execute(c.Request.Context(), ticketDomain)
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
 		return
 	}
-
-	c.Status(http.StatusCreated)
+	ticketResponses := mapper.FromDomainTicketsToResponses(tickets)
+	c.JSON(http.StatusCreated, ticketResponses)
 }

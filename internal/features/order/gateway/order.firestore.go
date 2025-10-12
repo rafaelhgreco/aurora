@@ -67,3 +67,10 @@ func (r *OrderFirestoreRepository) ListByUserID(ctx context.Context, userID stri
 	}
 	return orders, nil
 }
+
+func (r *OrderFirestoreRepository) UpdateStatus(ctx context.Context, id string, status domain.OrderStatus) error {
+	_, err := r.client.Collection(orderCollection).Doc(id).Update(ctx, []firestore.Update{
+		{Path: "status", Value: status},
+	})
+	return err
+}

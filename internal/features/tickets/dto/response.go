@@ -17,3 +17,11 @@ type TicketResponse struct {
 	ValidUntil time.Time                 `json:"valid_until"`
 	Status     ticketStatus.TicketStatus `json:"status"`
 }
+
+type TicketPurchasedResponse struct {
+	QRCodeData    string       `json:"qrcode_data"`
+	Status        ticketStatus.TicketStatus `json:"status"`
+	Quantity      int          `json:"quantity"`
+	IssuedAt      time.Time    `json:"issued_at"`
+	ValidUntil    time.Time    `json:"valid_until"`
+}

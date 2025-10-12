@@ -18,11 +18,15 @@ import (
 	eventsGateway "aurora.com/aurora-backend/internal/features/events/gateway"
 
 	// Tickets imports
+	ticketsController "aurora.com/aurora-backend/internal/features/tickets/controller"
 	ticketsDomain "aurora.com/aurora-backend/internal/features/tickets/domain"
+	ticketsFactory "aurora.com/aurora-backend/internal/features/tickets/factory"
 	ticketsGateway "aurora.com/aurora-backend/internal/features/tickets/gateway"
 
 	// Orders imports
+	orderController "aurora.com/aurora-backend/internal/features/order/controller"
 	orderDomain "aurora.com/aurora-backend/internal/features/order/domain"
+	orderFactory "aurora.com/aurora-backend/internal/features/order/factory"
 	orderGateway "aurora.com/aurora-backend/internal/features/order/gateway"
 
 	"aurora.com/aurora-backend/internal/firebase"
@@ -34,11 +38,16 @@ type Container struct {
 	FirebaseApp    *firebase.FirebaseApp
 
 	// Event repositories
-	EventController     *eventsController.EventController
-	EventRepo           eventsDomain.EventRepository
-	TicketLotRepo       ticketsDomain.TicketLotRepository
+	EventController *eventsController.EventController
+	EventRepo       eventsDomain.EventRepository
+
+	// Ticket repositories
+	TicketController    *ticketsController.TicketController
 	PurchasedTicketRepo ticketsDomain.PurchasedTicketRepository
-	OrderRepo           orderDomain.OrderRepository
+
+	// Order repositories]
+	OrderController *orderController.OrderController
+	OrderRepo       orderDomain.OrderRepository
 }
 
 func Build() (*Container, error) {
@@ -47,7 +56,7 @@ func Build() (*Container, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	// User
 	authClient, err := fbApp.App.Auth(ctx)
 	if err != nil {
 		return nil, err
@@ -62,15 +71,8 @@ func Build() (*Container, error) {
 	userUseCaseFactory := userFactory.NewUseCaseFactory(userRepoImpl, authGateway)
 	userCtrl := userController.NewUserController(userUseCaseFactory.CreateUser, userUseCaseFactory.UpdateUser, userUseCaseFactory.GetUserByID, userUseCaseFactory.DeleteUser, userUseCaseFactory.LoginUser, userUseCaseFactory.ChangePassword)
 
+	// Repositories Events - Tickets - Orders
 	eventRepoImpl, err := eventsGateway.NewEventFirestoreRepository(fbApp)
-	if err != nil {
-		return nil, err
-	}
-
-	eventUseCaseFactory := eventsFactory.NewUseCaseFactory(eventRepoImpl)
-	eventCtrl := eventsController.NewEventController(eventUseCaseFactory.CreateEvent, eventUseCaseFactory.FindByIDEvent, eventUseCaseFactory.ListAllEvent, eventUseCaseFactory.SoftDeleteEvent)
-
-	ticketLotRepo, err := ticketsGateway.NewTicketLotFirestoreRepository(fbApp)
 	if err != nil {
 		return nil, err
 	}
@@ -85,6 +87,20 @@ func Build() (*Container, error) {
 		return nil, err
 	}
 
+	// Event Factory
+	eventUseCaseFactory := eventsFactory.NewUseCaseFactory(eventRepoImpl)
+	eventCtrl := eventsController.NewEventController(eventUseCaseFactory.CreateEvent, eventUseCaseFactory.FindByIDEvent, eventUseCaseFactory.ListAllEvent, eventUseCaseFactory.SoftDeleteEvent)
+	// Ticket Factory
+	ticketUseCaseFactory := ticketsFactory.NewUseCaseFactory(
+		eventRepoImpl,
+		orderRepo,
+		purchasedTicketRepo,
+	)
+	ticketCtrl := ticketsController.NewTicketController(ticketUseCaseFactory.PurchaseTicket)
+
+	// Order Factory
+	orderUseCaseFactory := orderFactory.NewUseCaseFactory(orderRepo, eventRepoImpl)
+	orderCtrl := orderController.NewOrderController(orderUseCaseFactory.CreateOrder)
 	router := gin.Default()
 	authMw := userSecurity.AuthMiddleware(authClient)
 
@@ -114,6 +130,14 @@ func Build() (*Container, error) {
 					eventRoutes.PATCH("/:id/cancel", eventCtrl.SoftDeleteEvent)
 
 				}
+				ticketRoutes := protectedRoutes.Group("/tickets")
+				{
+					ticketRoutes.POST("/", ticketCtrl.CreateTicket)
+				}
+				orderRoutes := protectedRoutes.Group("/orders")
+				{
+					orderRoutes.POST("/", orderCtrl.CreateOrder)
+				}
 			}
 		}
 	}
@@ -123,7 +147,6 @@ func Build() (*Container, error) {
 		UserController:      userCtrl,
 		FirebaseApp:         fbApp,
 		EventRepo:           eventRepoImpl,
-		TicketLotRepo:       ticketLotRepo,
 		PurchasedTicketRepo: purchasedTicketRepo,
 		OrderRepo:           orderRepo,
 	}, nil

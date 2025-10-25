@@ -13,6 +13,7 @@ func main() {
 	}
 
 	log.Println("Servidor iniciando na porta :8080")
+	log.Println("Swagger disponível em http://localhost:8080/swagger/index.html")
 
 	if err := container.Router.Run(":8080"); err != nil {
 		log.Fatalf("Falha ao iniciar o servidor Gin: %v", err)

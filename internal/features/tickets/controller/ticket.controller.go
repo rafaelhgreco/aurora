@@ -6,6 +6,7 @@ import (
 	"aurora.com/aurora-backend/internal/features/tickets/dto"
 	"aurora.com/aurora-backend/internal/features/tickets/mapper"
 	usecase "aurora.com/aurora-backend/internal/features/tickets/use-case"
+	sharedErrors "aurora.com/aurora-backend/internal/shared/errors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -30,18 +31,18 @@ func NewTicketController(createTicket *usecase.PurchaseTicketUseCase) *TicketCon
 func (ctrl *TicketController) CreateTicket(c *gin.Context) {
 	var req dto.PurchaseTicketRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		sharedErrors.HandleError(c, sharedErrors.ErrInvalidInput)
 		return
 	}
 
 	ticketDomain, err := mapper.FromPurchaseTicketRequestToDomain(&req)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		sharedErrors.HandleError(c, err)
 		return
 	}
 	tickets, err := ctrl.createTicket.Execute(c.Request.Context(), ticketDomain)
 	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
+		sharedErrors.HandleError(c, err)
 		return
 	}
 	ticketResponses := mapper.FromDomainTicketsToResponses(tickets)

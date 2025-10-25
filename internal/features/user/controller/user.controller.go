@@ -10,6 +10,7 @@ import (
 	securityDTO "aurora.com/aurora-backend/internal/features/user/security/dto"
 	userAuthUseCase "aurora.com/aurora-backend/internal/features/user/security/use-case"
 	userUseCase "aurora.com/aurora-backend/internal/features/user/use-case"
+	sharedErrors "aurora.com/aurora-backend/internal/shared/errors"
 )
 
 type UserController struct {
@@ -46,18 +47,18 @@ func NewUserController(createUser *userUseCase.CreateUserUseCase, updateUser *us
 func (ctrl *UserController) CreateUser(c *gin.Context) {
 	var req dto.CreateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		sharedErrors.HandleError(c, sharedErrors.ErrInvalidInput)
 		return
 	}
 
 	userEntity, err := mapper.FromCreateRequestToUserEntity(&req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		sharedErrors.HandleError(c, err)
 		return
 	}
 	_, err = ctrl.createUser.Execute(c.Request.Context(), userEntity)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		sharedErrors.HandleError(c, err)
 		return
 	}
 
@@ -78,13 +79,13 @@ func (ctrl *UserController) CreateUser(c *gin.Context) {
 func (ctrl *UserController) GetUser(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ID is required"})
+		sharedErrors.HandleError(c, sharedErrors.ErrInvalidInput)
 		return
 	}
 
 	userEntity, err := ctrl.getUserById.Execute(c.Request.Context(), id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		sharedErrors.HandleError(c, err)
 		return
 	}
 
@@ -108,23 +109,23 @@ func (ctrl *UserController) GetUser(c *gin.Context) {
 func (ctrl *UserController) UpdateUser(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ID is required"})
+		sharedErrors.HandleError(c, sharedErrors.ErrInvalidInput)
 		return
 	}
 
 	var req dto.UpdateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		sharedErrors.HandleError(c, sharedErrors.ErrInvalidInput)
 		return
 	}
 	userEntity, err := mapper.FromUpdateRequestToUserEntity(&req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		sharedErrors.HandleError(c, err)
 		return
 	}
 	_, err = ctrl.updateUser.Execute(c.Request.Context(), id, userEntity)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		sharedErrors.HandleError(c, err)
 		return
 	}
 
@@ -145,12 +146,12 @@ func (ctrl *UserController) UpdateUser(c *gin.Context) {
 func (ctrl *UserController) DeleteUser(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ID is required"})
+		sharedErrors.HandleError(c, sharedErrors.ErrInvalidInput)
 		return
 	}
 
 	if err := ctrl.deleteUser.Execute(c.Request.Context(), id); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		sharedErrors.HandleError(c, err)
 		return
 	}
 
@@ -171,13 +172,13 @@ func (ctrl *UserController) DeleteUser(c *gin.Context) {
 func (ctrl *UserController) Login(c *gin.Context) {
 	var req securityDTO.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		sharedErrors.HandleError(c, sharedErrors.ErrInvalidInput)
 		return
 	}
 
 	loginResponse, accessToken, refreshToken, err := ctrl.loginUser.Execute(c.Request.Context(), req.IDToken)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		sharedErrors.HandleError(c, err)
 		return
 	}
 
@@ -204,25 +205,25 @@ func (ctrl *UserController) Login(c *gin.Context) {
 func (ctrl *UserController) ChangePassword(c *gin.Context) {
 	uid, exists := c.Get("uid")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User UID not found in context"})
+		sharedErrors.HandleError(c, sharedErrors.ErrInvalidInput)
 		return
 	}
 
 	userID, ok := uid.(string)
 	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "UID in context is not a string"})
+		sharedErrors.HandleError(c, sharedErrors.ErrInvalidInput)
 		return
 	}
 
 	var req securityDTO.ChangePasswordRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		sharedErrors.HandleError(c, sharedErrors.ErrInvalidInput)
 		return
 	}
 	input := mapper.FromChangePasswordRequestToDomain(userID, &req)
 	err := ctrl.changePasswordUser.Execute(c.Request.Context(), input.UserID, input.NewPassword)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		sharedErrors.HandleError(c, err)
 		return
 	}
 

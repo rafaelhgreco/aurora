@@ -6,6 +6,7 @@ import (
 	"aurora.com/aurora-backend/internal/features/order/dto"
 	"aurora.com/aurora-backend/internal/features/order/mapper"
 	usecase "aurora.com/aurora-backend/internal/features/order/use-case"
+	sharedErrors "aurora.com/aurora-backend/internal/shared/errors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -31,19 +32,19 @@ func NewOrderController(orderUseCase *usecase.CreateOrderUseCase) *OrderControll
 func (ctrl *OrderController) CreateOrder(c *gin.Context) {
 	var req dto.CreateOrderRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		sharedErrors.HandleError(c, sharedErrors.ErrInvalidInput)
 		return
 	}
 
 	orderDomain, err := mapper.FromCreateOrderRequestToDomain(&req)
 	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
+		sharedErrors.HandleError(c, err)
 		return
 	}
 
 	orderId, err := ctrl.orderUseCase.Execute(c.Request.Context(), orderDomain)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		sharedErrors.HandleError(c, err)
 		return
 	}
 	c.JSON(http.StatusCreated, gin.H{"message": "Order created successfully", "order_id": orderId})

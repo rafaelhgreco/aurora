@@ -6,6 +6,7 @@ import (
 	"aurora.com/aurora-backend/internal/features/events/dto"
 	"aurora.com/aurora-backend/internal/features/events/mapper"
 	usecase "aurora.com/aurora-backend/internal/features/events/use-case/event"
+	sharedErrors "aurora.com/aurora-backend/internal/shared/errors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -39,18 +40,18 @@ func NewEventController(createEvent *usecase.CreateEventUseCase, findByIDEvent *
 func (ctrl *EventController) CreateEvent(c *gin.Context) {
 	var req dto.CreateEventRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		sharedErrors.HandleError(c, sharedErrors.ErrInvalidInput)
 		return
 	}
 	eventEntity, err := mapper.FromCreateRequestToEventEntity(&req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		sharedErrors.HandleError(c, err)
 		return
 	}
 	_, err = ctrl.createEvent.Execute(c.Request.Context(), eventEntity)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		sharedErrors.HandleError(c, err)
 		return
 	}
 	c.Status(http.StatusCreated)
@@ -71,17 +72,17 @@ func (ctrl *EventController) CreateEvent(c *gin.Context) {
 func (ctrl *EventController) GetEvent(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ID is required"})
+		sharedErrors.HandleError(c, sharedErrors.ErrInvalidInput)
 		return
 	}
 	eventEntity, err := ctrl.findByIDEvent.Execute(c.Request.Context(), id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		sharedErrors.HandleError(c, err)
 		return
 	}
 	eventResponse, err := mapper.FromEventEntityToResponse(eventEntity)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		sharedErrors.HandleError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, eventResponse)
@@ -100,12 +101,12 @@ func (ctrl *EventController) ListEvents(c *gin.Context) {
 	filter := make(map[string]interface{})
 	events, err := ctrl.listAllEvent.Execute(c.Request.Context(), filter)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		sharedErrors.HandleError(c, err)
 		return
 	}
 	eventsResponse, err := mapper.FromEventEntitiesToResponses(events)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		sharedErrors.HandleError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, eventsResponse)
@@ -125,17 +126,17 @@ func (ctrl *EventController) ListEvents(c *gin.Context) {
 func (ctrl *EventController) SoftDeleteEvent(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ID is required"})
+		sharedErrors.HandleError(c, sharedErrors.ErrInvalidInput)
 		return
 	}
 	eventEntity, err := ctrl.softDeleteEvent.Execute(c.Request.Context(), id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		sharedErrors.HandleError(c, err)
 		return
 	}
 	_, err = mapper.FromSoftDeleteEventEntity(eventEntity)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		sharedErrors.HandleError(c, err)
 		return
 	}
 	c.Status(http.StatusNoContent)

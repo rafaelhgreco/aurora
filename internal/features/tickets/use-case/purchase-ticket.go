@@ -29,7 +29,7 @@ func NewPurchaseTicketUseCase(
 	}
 }
 
-func (uc *PurchaseTicketUseCase) Execute(ctx context.Context, req *domain.Ticket) (*domain.Ticket, error) {
+func (uc *PurchaseTicketUseCase) Execute(ctx context.Context, req *domain.Ticket) ([]*domain.Ticket, error) {
 	event, err := uc.eventRepo.FindByID(ctx, req.EventId)
 	if err != nil {
 		return nil, errors.New("event not found")
@@ -45,16 +45,14 @@ func (uc *PurchaseTicketUseCase) Execute(ctx context.Context, req *domain.Ticket
 	if order.EventId != req.EventId || order.UserId != req.UserId {
 		return nil, errors.New("order not found")
 	}
-	event.AvailableTickets -= 1
-	event.UpdatedAt = time.Now()
-	_, err = uc.eventRepo.Update(ctx, event)
-	if err != nil {
-		return nil, errors.New("failed to update event")
+	if order.Status != orderDomain.ORDER_PENDING {
+		return nil, errors.New("order is not pending")
 	}
 
+	var tickets []*domain.Ticket
 	validUntil := req.ValidUntil
-
-	ticket := &domain.Ticket{
+	for i := 0; i < req.Quantity; i++ {
+		ticket := &domain.Ticket{
 		ID:            uuid.New().String(),
 		OrderId:       req.OrderId,
 		EventId:       req.EventId,
@@ -66,10 +64,26 @@ func (uc *PurchaseTicketUseCase) Execute(ctx context.Context, req *domain.Ticket
 		IssuedAt:      time.Now(),
 		ValidUntil:    validUntil,
 	}
-	_, err = uc.ticketRepo.Save(ctx, ticket)
+	savedTicket, err := uc.ticketRepo.Save(ctx, ticket)
 	if err != nil {
 		return nil, err
 	}
-	return ticket, nil
+	tickets = append(tickets, savedTicket)
+	}
+
+	order.Status = orderDomain.ORDER_COMPLETED
+	err = uc.orderRepo.UpdateStatus(ctx, order.ID, order.Status)
+	if err != nil {
+		return nil, errors.New("failed to update order")
+	}
+
+	event.AvailableTickets -= req.Quantity
+	event.UpdatedAt = time.Now()
+	_, err = uc.eventRepo.Update(ctx, event)
+	if err != nil {
+		return nil, errors.New("failed to update event")
+	}
+
+	return tickets, nil
 
 }

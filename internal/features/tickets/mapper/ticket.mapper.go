@@ -19,5 +19,19 @@ func FromPurchaseTicketRequestToDomain(req *dto.PurchaseTicketRequest) (*domain.
 		PurchasePrice: req.PurchasePrice,
 		QRCodeData:    req.QRCodeData,
 		ValidUntil:    validUntil,
+		Quantity:      req.Quantity,
 	}, nil
+}
+
+func FromDomainTicketsToResponses(tickets []*domain.Ticket) []*dto.TicketPurchasedResponse {
+    var responses []*dto.TicketPurchasedResponse
+    for _, ticket := range tickets {
+        responses = append(responses, &dto.TicketPurchasedResponse{
+            QRCodeData: ticket.QRCodeData,
+            ValidUntil: ticket.ValidUntil,
+            Quantity:   ticket.Quantity,
+            Status:     ticket.Status,
+        })
+    }
+    return responses
 }

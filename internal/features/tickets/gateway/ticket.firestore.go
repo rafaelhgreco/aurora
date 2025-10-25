@@ -9,7 +9,6 @@ import (
 	"cloud.google.com/go/firestore"
 )
 
-const ticketLotCollection = "ticket_lots"
 const purchasedTicketCollection = "purchased_tickets"
 
 type PurchasedTicketFirestoreRepository struct {

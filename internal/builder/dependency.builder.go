@@ -5,6 +5,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	// Swagger
+	_ "aurora.com/aurora-backend/docs"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
 	// User imports
 	userController "aurora.com/aurora-backend/internal/features/user/controller"
 	userFactory "aurora.com/aurora-backend/internal/features/user/factory"
@@ -29,6 +34,7 @@ import (
 	orderFactory "aurora.com/aurora-backend/internal/features/order/factory"
 	orderGateway "aurora.com/aurora-backend/internal/features/order/gateway"
 
+	// Firebase
 	"aurora.com/aurora-backend/internal/firebase"
 )
 
@@ -103,6 +109,9 @@ func Build() (*Container, error) {
 	orderCtrl := orderController.NewOrderController(orderUseCaseFactory.CreateOrder)
 	router := gin.Default()
 	authMw := userSecurity.AuthMiddleware(authClient)
+
+	// Swagger
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	{
 		v1 := router.Group("/v1")

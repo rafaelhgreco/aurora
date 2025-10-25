@@ -1,0 +1,633 @@
+definitions:
+  aurora_com_aurora-backend_internal_features_events_dto.CreateEventRequest:
+    description: Representa o request de criação de um novo evento
+    properties:
+      description:
+        description: '@Descrição do evento'
+        type: string
+      end_time:
+        description: '@@2023-01-01T00:00:00Z'
+        type: string
+      location:
+        description: '@Local do evento'
+        type: string
+      start_time:
+        description: '@@2023-01-01T00:00:00Z'
+        type: string
+      title:
+        description: '@Titulo do evento'
+        type: string
+      total_tickets:
+        description: '@300'
+        minimum: 1
+        type: integer
+    required:
+    - description
+    - end_time
+    - location
+    - start_time
+    - title
+    - total_tickets
+    type: object
+  aurora_com_aurora-backend_internal_features_events_dto.EventResponse:
+    properties:
+      available_tickets:
+        type: integer
+      created_at:
+        type: string
+      date:
+        type: string
+      description:
+        type: string
+      end_time:
+        type: string
+      id:
+        type: string
+      location:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      total_tickets:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  aurora_com_aurora-backend_internal_features_order_dto.CreateOrderRequest:
+    description: Representa o request de criação de uma nova ordem
+    properties:
+      event_id:
+        description: '@ID do evento'
+        type: string
+      quantity:
+        description: '@1'
+        minimum: 1
+        type: integer
+      total_amount:
+        description: '@100.00'
+        type: number
+      user_id:
+        description: '@ID do usuário'
+        type: string
+    required:
+    - event_id
+    - quantity
+    - total_amount
+    - user_id
+    type: object
+  aurora_com_aurora-backend_internal_features_tickets_domain.TicketStatus:
+    enum:
+    - 0
+    - 1
+    - 2
+    - 3
+    type: integer
+    x-enum-varnames:
+    - TicketValid
+    - TicketUsed
+    - TicketInvalid
+    - ticketCanceled
+  aurora_com_aurora-backend_internal_features_tickets_dto.PurchaseTicketRequest:
+    description: Representa o request de compra de um ticket
+    properties:
+      event_id:
+        description: '@Id do evento'
+        type: string
+      order_id:
+        description: '@Id da compra'
+        type: string
+      purchase_price:
+        description: '@100.00'
+        type: number
+      qrcode_data:
+        description: '@base64'
+        type: string
+      quantity:
+        description: '@1'
+        minimum: 1
+        type: integer
+      user_id:
+        description: '@Id do usuário'
+        type: string
+      valid_until:
+        description: '@2023-01-01T00:00:00Z'
+        type: string
+    required:
+    - event_id
+    - order_id
+    - purchase_price
+    - quantity
+    - user_id
+    type: object
+  aurora_com_aurora-backend_internal_features_tickets_dto.TicketPurchasedResponse:
+    properties:
+      issued_at:
+        type: string
+      qrcode_data:
+        type: string
+      quantity:
+        type: integer
+      status:
+        $ref: '#/definitions/aurora_com_aurora-backend_internal_features_tickets_domain.TicketStatus'
+      valid_until:
+        type: string
+    type: object
+  aurora_com_aurora-backend_internal_features_user_dto.CreateUserRequest:
+    description: Representa o request de criação de um novo usuário
+    properties:
+      email:
+        description: '@SeuEmail@email.com'
+        type: string
+      name:
+        description: '@Seu nome'
+        type: string
+      password:
+        description: '@SuaSenha123@'
+        minLength: 8
+        type: string
+      permissions:
+        items:
+          type: string
+        type: array
+      teamId:
+        type: string
+      type:
+        description: |-
+          @ADMIN
+          @COLLABORATOR
+          @COMMON
+        enum:
+        - COMMON
+        - COLLABORATOR
+        - ADMIN
+        - ""
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  aurora_com_aurora-backend_internal_features_user_dto.UpdateUserRequest:
+    description: Representa o request de atualização de um usuário
+    properties:
+      email:
+        description: '@SeuNovoEmail@email.com'
+        type: string
+      name:
+        description: '@Seu novo nome'
+        type: string
+    type: object
+  aurora_com_aurora-backend_internal_features_user_dto.UserResponse:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      type:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  aurora_com_aurora-backend_internal_features_user_security_dto.ChangePasswordRequest:
+    properties:
+      confirmPassword:
+        type: string
+      newPassword:
+        minLength: 8
+        type: string
+    required:
+    - confirmPassword
+    - newPassword
+    type: object
+  aurora_com_aurora-backend_internal_features_user_security_dto.LoginRequest:
+    properties:
+      id_token:
+        type: string
+    required:
+    - id_token
+    type: object
+info:
+  contact: {}
+paths:
+  /auth/change-password:
+    post:
+      consumes:
+      - application/json
+      description: Altera a senha do usuário autenticado
+      parameters:
+      - description: Nova senha
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/aurora_com_aurora-backend_internal_features_user_security_dto.ChangePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Alterar senha
+      tags:
+      - auth
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Autentica o usuário e retorna tokens de acesso
+      parameters:
+      - description: Credenciais de login
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/aurora_com_aurora-backend_internal_features_user_security_dto.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: user, access_token, refresh_token
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Fazer login
+      tags:
+      - auth
+  /events:
+    get:
+      consumes:
+      - application/json
+      description: Retorna uma lista de todos os eventos disponíveis
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/aurora_com_aurora-backend_internal_features_events_dto.EventResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Listar todos os eventos
+      tags:
+      - events
+    post:
+      consumes:
+      - application/json
+      description: Cria um novo evento no sistema
+      parameters:
+      - description: Dados do evento
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/aurora_com_aurora-backend_internal_features_events_dto.CreateEventRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Event created successfully
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Criar novo evento
+      tags:
+      - events
+  /events/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove logicamente um evento do sistema
+      parameters:
+      - description: ID do evento
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Deletar evento (soft delete)
+      tags:
+      - events
+    get:
+      consumes:
+      - application/json
+      description: Retorna os dados de um evento específico
+      parameters:
+      - description: ID do evento
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/aurora_com_aurora-backend_internal_features_events_dto.EventResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Event not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Buscar evento por ID
+      tags:
+      - events
+  /orders:
+    post:
+      consumes:
+      - application/json
+      description: Cria uma nova ordem de compra para um evento
+      parameters:
+      - description: Dados da ordem
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/aurora_com_aurora-backend_internal_features_order_dto.CreateOrderRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: message, order_id
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Criar nova ordem
+      tags:
+      - orders
+  /tickets:
+    post:
+      consumes:
+      - application/json
+      description: Cria N ingressos para um evento com base em uma ordem
+      parameters:
+      - description: Dados de compra de ingressos
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/aurora_com_aurora-backend_internal_features_tickets_dto.PurchaseTicketRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Lista de ingressos criados
+          schema:
+            items:
+              $ref: '#/definitions/aurora_com_aurora-backend_internal_features_tickets_dto.TicketPurchasedResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Criar ingressos
+      tags:
+      - tickets
+  /users:
+    post:
+      consumes:
+      - application/json
+      description: Cria um novo usuário no sistema
+      parameters:
+      - description: Dados do usuário
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/aurora_com_aurora-backend_internal_features_user_dto.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User created successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Criar novo usuário
+      tags:
+      - users
+  /users/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove um usuário do sistema
+      parameters:
+      - description: ID do usuário
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Deletar usuário
+      tags:
+      - users
+    get:
+      consumes:
+      - application/json
+      description: Retorna os dados de um usuário específico
+      parameters:
+      - description: ID do usuário
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/aurora_com_aurora-backend_internal_features_user_dto.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Buscar usuário por ID
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: Atualiza os dados de um usuário existente
+      parameters:
+      - description: ID do usuário
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados atualizados
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/aurora_com_aurora-backend_internal_features_user_dto.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User updated successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Atualizar usuário
+      tags:
+      - users
+swagger: "2.0"

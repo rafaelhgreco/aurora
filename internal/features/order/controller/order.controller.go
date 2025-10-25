@@ -16,7 +16,18 @@ type OrderController struct {
 func NewOrderController(orderUseCase *usecase.CreateOrderUseCase) *OrderController {
 	return &OrderController{orderUseCase: orderUseCase}
 }
-
+// CreateOrder godoc
+// @Summary Criar nova ordem
+// @Description Cria uma nova ordem de compra para um evento
+// @Tags orders
+// @Accept json
+// @Produce json
+// @Param request body dto.CreateOrderRequest true "Dados da ordem"
+// @Success 201 {object} map[string]interface{} "message, order_id"
+// @Failure 400 {object} map[string]string "Bad Request"
+// @Failure 422 {object} map[string]string "Unprocessable Entity"
+// @Failure 500 {object} map[string]string "Internal Server Error"
+// @Router /orders [post]
 func (ctrl *OrderController) CreateOrder(c *gin.Context) {
 	var req dto.CreateOrderRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

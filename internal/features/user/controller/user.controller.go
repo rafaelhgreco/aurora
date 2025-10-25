@@ -32,6 +32,17 @@ func NewUserController(createUser *userUseCase.CreateUserUseCase, updateUser *us
 	}
 }
 
+// CreateUser godoc
+// @Summary Criar novo usuário
+// @Description Cria um novo usuário no sistema
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param request body dto.CreateUserRequest true "Dados do usuário"
+// @Success 201 {object} map[string]string "User created successfully"
+// @Failure 400 {object} map[string]string "Bad Request"
+// @Failure 500 {object} map[string]string "Internal Server Error"
+// @Router /users [post]
 func (ctrl *UserController) CreateUser(c *gin.Context) {
 	var req dto.CreateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -53,6 +64,17 @@ func (ctrl *UserController) CreateUser(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "User created successfully"})
 }
 
+// GetUser godoc
+// @Summary Buscar usuário por ID
+// @Description Retorna os dados de um usuário específico
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param id path string true "ID do usuário"
+// @Success 200 {object} dto.UserResponse
+// @Failure 400 {object} map[string]string "Bad Request"
+// @Failure 404 {object} map[string]string "User not found"
+// @Router /users/{id} [get]
 func (ctrl *UserController) GetUser(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
@@ -71,6 +93,18 @@ func (ctrl *UserController) GetUser(c *gin.Context) {
 	c.JSON(http.StatusOK, userResponse)
 }
 
+// UpdateUser godoc
+// @Summary Atualizar usuário
+// @Description Atualiza os dados de um usuário existente
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param id path string true "ID do usuário"
+// @Param request body dto.UpdateUserRequest true "Dados atualizados"
+// @Success 200 {object} map[string]string "User updated successfully"
+// @Failure 400 {object} map[string]string "Bad Request"
+// @Failure 500 {object} map[string]string "Internal Server Error"
+// @Router /users/{id} [put]
 func (ctrl *UserController) UpdateUser(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
@@ -97,6 +131,17 @@ func (ctrl *UserController) UpdateUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "User updated successfully"})
 }
 
+// DeleteUser godoc
+// @Summary Deletar usuário
+// @Description Remove um usuário do sistema
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param id path string true "ID do usuário"
+// @Success 204 "No Content"
+// @Failure 400 {object} map[string]string "Bad Request"
+// @Failure 500 {object} map[string]string "Internal Server Error"
+// @Router /users/{id} [delete]
 func (ctrl *UserController) DeleteUser(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
@@ -112,6 +157,17 @@ func (ctrl *UserController) DeleteUser(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// Login godoc
+// @Summary Fazer login
+// @Description Autentica o usuário e retorna tokens de acesso
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body securityDTO.LoginRequest true "Credenciais de login"
+// @Success 200 {object} map[string]interface{} "user, access_token, refresh_token"
+// @Failure 400 {object} map[string]string "Bad Request"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Router /auth/login [post]
 func (ctrl *UserController) Login(c *gin.Context) {
 	var req securityDTO.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -132,6 +188,19 @@ func (ctrl *UserController) Login(c *gin.Context) {
 	})
 }
 
+// ChangePassword godoc
+// @Summary Alterar senha
+// @Description Altera a senha do usuário autenticado
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body securityDTO.ChangePasswordRequest true "Nova senha"
+// @Success 204 "No Content"
+// @Failure 400 {object} map[string]string "Bad Request"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 500 {object} map[string]string "Internal Server Error"
+// @Router /auth/change-password [post]
 func (ctrl *UserController) ChangePassword(c *gin.Context) {
 	uid, exists := c.Get("uid")
 	if !exists {

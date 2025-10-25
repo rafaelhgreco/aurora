@@ -16,7 +16,17 @@ type TicketController struct {
 func NewTicketController(createTicket *usecase.PurchaseTicketUseCase) *TicketController {
 	return &TicketController{createTicket: createTicket}
 }
-
+// CreateTicket godoc
+// @Summary Criar ingressos
+// @Description Cria N ingressos para um evento com base em uma ordem
+// @Tags tickets
+// @Accept json
+// @Produce json
+// @Param request body dto.PurchaseTicketRequest true "Dados de compra de ingressos"
+// @Success 201 {array} dto.TicketPurchasedResponse "Lista de ingressos criados"
+// @Failure 400 {object} map[string]string "Bad Request"
+// @Failure 422 {object} map[string]string "Unprocessable Entity"
+// @Router /tickets [post]
 func (ctrl *TicketController) CreateTicket(c *gin.Context) {
 	var req dto.PurchaseTicketRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

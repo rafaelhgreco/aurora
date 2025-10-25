@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	// Swagger
+	_ "aurora.com/aurora-backend/docs"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
